@@ -24,6 +24,14 @@
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
   <title>Flistra2Neo - SUMT</title>
+  <script>
+    const redirect = sessionStorage.redirect;
+    delete sessionStorage.redirect;
+    if (redirect && redirect !== location.href) {
+      const path = redirect.split('/ox')[1];
+      history.replaceState(null, null, '/ox' + path);
+    }
+  </script>
 </head>
 
 <body>
