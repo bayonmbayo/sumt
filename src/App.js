@@ -12,14 +12,16 @@ function App() {
   return (
     <BrowserRouter>
       <Header />
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/transfers" element={<Home />} />
-        <Route path="/transfer/:transfer" element={<ViewTransfer />} />
-        <Route path="/new" element={<NewTransfer />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/about" element={<Home />} />
-      </Routes>
+      <BrowserRouter basename="/sumt">
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/transfers" element={<Home />} />
+          <Route path="/transfer/:transfer" element={<ViewTransfer />} />
+          <Route path="/new" element={<NewTransfer />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/about" element={<Home />} />
+        </Routes>
+      </BrowserRouter>
     </BrowserRouter>
   );
 }

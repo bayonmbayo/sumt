@@ -28,7 +28,7 @@ const Header = () => {
             </AppBar>
             <Container>
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 5 }}>
-                    <img src="/lbm.png" alt="Logo" style={{ height: '100px', paddingTop: 50 }} />
+                    <img src="./lbm.png" alt="Logo" style={{ height: '100px', paddingTop: 50 }} />
                 </Box>
             </Container>
         </>
