@@ -1,0 +1,8 @@
+@media only screen and (max-width: 352px) {
+
+    html,
+    body,
+    #root {
+        font-size: 0.5rem !important;
+    }
+}

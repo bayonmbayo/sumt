@@ -1,0 +1,287 @@
+{
+    "id": 1,
+    "title": "TF-20250408-000001",
+    "status": "done",
+    "bauprojekte": [
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [
+                            7.593955993652341,
+                            50.36244809879689
+                        ],
+                        [
+                            7.592582702636717,
+                            50.36023051515941
+                        ],
+                        [
+                            7.601766586303708,
+                            50.3582318633635
+                        ],
+                        [
+                            7.603225708007811,
+                            50.3628587510637
+                        ],
+                        [
+                            7.599148750305174,
+                            50.362557606415464
+                        ],
+                        [
+                            7.596273422241207,
+                            50.362612360130036
+                        ],
+                        [
+                            7.593955993652341,
+                            50.36244809879689
+                        ]
+                    ]
+                ]
+            ],
+            "properties": {
+                "title": "A1 (Wittlich) - B50a (Platten)",
+                "responsible": {
+                    "registration_office": "",
+                    "registration_file_number": "",
+                    "conservation_office": "",
+                    "conservation_file_number": "",
+                    "handler": {
+                        "type": "",
+                        "detail": ""
+                    }
+                },
+                "legal": {
+                    "registration_date": null,
+                    "binding_date": null,
+                    "process_type": null,
+                    "laws": []
+                }
+            }
+        },
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [
+                            7.593955993652341,
+                            50.36244809879689
+                        ],
+                        [
+                            7.592582702636717,
+                            50.36023051515941
+                        ],
+                        [
+                            7.601766586303708,
+                            50.3582318633635
+                        ],
+                        [
+                            7.603225708007811,
+                            50.3628587510637
+                        ],
+                        [
+                            7.599148750305174,
+                            50.362557606415464
+                        ],
+                        [
+                            7.596273422241207,
+                            50.362612360130036
+                        ],
+                        [
+                            7.593955993652341,
+                            50.36244809879689
+                        ]
+                    ]
+                ]
+            ],
+            "properties": {
+                "title": "B327 (Koblenz) - B49 (Cochem)",
+                "responsible": {
+                    "registration_office": "",
+                    "registration_file_number": "",
+                    "conservation_office": "",
+                    "conservation_file_number": "",
+                    "handler": {
+                        "type": "",
+                        "detail": ""
+                    }
+                },
+                "legal": {
+                    "registration_date": null,
+                    "binding_date": null,
+                    "process_type": null,
+                    "laws": []
+                }
+            }
+        },
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [
+                            7.593955993652341,
+                            50.36244809879689
+                        ],
+                        [
+                            7.592582702636717,
+                            50.36023051515941
+                        ],
+                        [
+                            7.601766586303708,
+                            50.3582318633635
+                        ],
+                        [
+                            7.603225708007811,
+                            50.3628587510637
+                        ],
+                        [
+                            7.599148750305174,
+                            50.362557606415464
+                        ],
+                        [
+                            7.596273422241207,
+                            50.362612360130036
+                        ],
+                        [
+                            7.593955993652341,
+                            50.36244809879689
+                        ]
+                    ]
+                ]
+            ],
+            "properties": {
+                "title": "A48 (Trier) - A1 (Kaiserslautern)",
+                "responsible": {
+                    "registration_office": "",
+                    "registration_file_number": "",
+                    "conservation_office": "",
+                    "conservation_file_number": "",
+                    "handler": {
+                        "type": "",
+                        "detail": ""
+                    }
+                },
+                "legal": {
+                    "registration_date": null,
+                    "binding_date": null,
+                    "process_type": null,
+                    "laws": []
+                }
+            }
+        },
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [
+                            7.593955993652341,
+                            50.36244809879689
+                        ],
+                        [
+                            7.592582702636717,
+                            50.36023051515941
+                        ],
+                        [
+                            7.601766586303708,
+                            50.3582318633635
+                        ],
+                        [
+                            7.603225708007811,
+                            50.3628587510637
+                        ],
+                        [
+                            7.599148750305174,
+                            50.362557606415464
+                        ],
+                        [
+                            7.596273422241207,
+                            50.362612360130036
+                        ],
+                        [
+                            7.593955993652341,
+                            50.36244809879689
+                        ]
+                    ]
+                ]
+            ],
+            "properties": {
+                "title": "B269 (Bernkastel-Kues) - B50 (Simmern)",
+                "responsible": {
+                    "registration_office": "",
+                    "registration_file_number": "",
+                    "conservation_office": "",
+                    "conservation_file_number": "",
+                    "handler": {
+                        "type": "",
+                        "detail": ""
+                    }
+                },
+                "legal": {
+                    "registration_date": null,
+                    "binding_date": null,
+                    "process_type": null,
+                    "laws": []
+                }
+            }
+        },
+        {
+            "type": "MultiPolygon",
+            "coordinates": [
+                [
+                    [
+                        [
+                            7.593955993652341,
+                            50.36244809879689
+                        ],
+                        [
+                            7.592582702636717,
+                            50.36023051515941
+                        ],
+                        [
+                            7.601766586303708,
+                            50.3582318633635
+                        ],
+                        [
+                            7.603225708007811,
+                            50.3628587510637
+                        ],
+                        [
+                            7.599148750305174,
+                            50.362557606415464
+                        ],
+                        [
+                            7.596273422241207,
+                            50.362612360130036
+                        ],
+                        [
+                            7.593955993652341,
+                            50.36244809879689
+                        ]
+                    ]
+                ]
+            ],
+            "properties": {
+                "title": "A61 (Rheinböllen) - B50 (Hunsrück)",
+                "responsible": {
+                    "registration_office": "",
+                    "registration_file_number": "",
+                    "conservation_office": "",
+                    "conservation_file_number": "",
+                    "handler": {
+                        "type": "",
+                        "detail": ""
+                    }
+                },
+                "legal": {
+                    "registration_date": null,
+                    "binding_date": null,
+                    "process_type": null,
+                    "laws": []
+                }
+            }
+        }
+    ]
+}
