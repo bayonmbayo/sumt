@@ -98,6 +98,7 @@ const Transfers = () => {
     const t = useSelector(state => state.transfers.transfers);
     const [transferList, setTransferList] = useState(t);
     const l = useSelector(state => state.transfers.loading);
+
     const dispatch = useDispatch();
 
     const [page, setPage] = useState(1);
