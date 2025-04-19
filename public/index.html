@@ -28,8 +28,8 @@
     const redirect = sessionStorage.redirect;
     delete sessionStorage.redirect;
     if (redirect && redirect !== location.href) {
-      const path = redirect.split('/ox')[1];
-      history.replaceState(null, null, '/ox' + path);
+      const path = redirect.split('/sumt')[1];
+      history.replaceState(null, null, '/sumt' + path);
     }
   </script>
 </head>
