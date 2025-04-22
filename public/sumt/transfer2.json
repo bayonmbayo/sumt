@@ -1,0 +1,59 @@
+{
+    "lastupdate": "2025-04-14T23:19:21.000+08",
+    "transfers": [
+        {
+            "id": "1",
+            "title": "TF-20250408-000001",
+            "auto": false,
+            "status": 1,
+            "executedat": "2025-04-12T23:19:21.000+08",
+            "bauprojekte": 3,
+            "allbauprojekte": 10
+        },
+        {
+            "id": "1",
+            "title": "TF-20250408-000002",
+            "status": 2,
+            "auto": true,
+            "executedat": "2025-04-12T23:19:21.000+08",
+            "bauprojekte": 13,
+            "allbauprojekte": 13
+        },
+        {
+            "id": "1",
+            "title": "TF-20250408-000003",
+            "status": 3,
+            "auto": true,
+            "executedat": "2025-04-12T23:19:21.000+08",
+            "bauprojekte": 6,
+            "allbauprojekte": 8
+        },
+        {
+            "id": "1",
+            "title": "TF-20250408-000004",
+            "status": 1,
+            "auto": false,
+            "executedat": "2025-04-12T23:19:21.000+08",
+            "bauprojekte": 9,
+            "allbauprojekte": 15
+        },
+        {
+            "id": "1",
+            "title": "TF-20250408-000005",
+            "status": 3,
+            "auto": false,
+            "executedat": "2025-04-12T23:19:21.000+08",
+            "bauprojekte": 0,
+            "allbauprojekte": 20
+        },
+        {
+            "id": "1",
+            "title": "TF-20250408-000006",
+            "status": 2,
+            "auto": true,
+            "executedat": "2025-04-12T23:19:21.000+08",
+            "bauprojekte": 19,
+            "allbauprojekte": 19
+        }
+    ]
+}
