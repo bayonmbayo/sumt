@@ -11,7 +11,7 @@ import MenuList from '@mui/material/MenuList';
 import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import Stack from '@mui/material/Stack';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = () => {
     return (
@@ -39,16 +39,23 @@ const MenuListComposition = () => {
     const [open, setOpen] = React.useState(false);
     const anchorRef = useRef(null);
 
+    const navigate = useNavigate();
+
     const handleToggle = () => {
         setOpen((prevOpen) => !prevOpen);
     };
 
     const handleClose = (event) => {
+        console.log(event.target.id)
         if (
             anchorRef.current &&
             anchorRef.current.contains(event.target)
         ) {
             return;
+        }
+
+        if (event.target.id === "logout") {
+            navigate("/")
         }
 
         setOpen(false);
@@ -112,9 +119,9 @@ const MenuListComposition = () => {
                                         aria-labelledby="composition-button"
                                         onKeyDown={handleListKeyDown}
                                     >
-                                        <MenuItem onClick={handleClose}>Profile</MenuItem>
-                                        <MenuItem onClick={handleClose}>My account</MenuItem>
-                                        <MenuItem onClick={handleClose}>Logout</MenuItem>
+                                        <MenuItem onClick={handleClose} id="profile">Profile</MenuItem>
+                                        <MenuItem onClick={handleClose} id="profile">My account</MenuItem>
+                                        <MenuItem onClick={handleClose} id="logout">Logout</MenuItem>
                                     </MenuList>
                                 </ClickAwayListener>
                             </Paper>
