@@ -209,12 +209,12 @@ const User = ({ data, key, index }) => {
                         <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ padding: 20 }}>
                             Details
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" style={{ padding: 10 }}>
+                        {/* <Typography variant="body2" color="text.secondary" style={{ padding: 10 }}>
                             - Type : {data.type}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" style={{ padding: 10 }}>
                             - Coordinates : {polyCoordinates}
-                        </Typography>
+                        </Typography> */}
                     </div>
                 </div> : null}
         </>
