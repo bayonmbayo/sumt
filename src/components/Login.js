@@ -1,18 +1,42 @@
 import { Box, Button, Container, Paper, Stack, styled, TextField, Typography } from '@mui/material';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { userActions } from '../actions/user.actions';
+import { Spinner } from '../assets/spinner';
 
 
 const Login = () => {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
+    const [showSpinner, setShowSpinner] = useState(false)
+
+    const loggingIn = useSelector((state) => state.user.loggingIn);
+
+    useEffect(() => {
+        setShowSpinner(loggingIn);
+    }, [loggingIn]);
 
     const goToHome = () => {
         navigate("/transfers")
     }
 
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        var username, password;
+
+        if (username && password) {
+            setShowSpinner(true);
+            dispatch(userActions.login(username, password));
+        }
+    };
+
     return (
         <>
             <Container maxWidth="sm">
+                <Spinner show={loggingIn} />
                 <Paper elevation={3} sx={{ p: 4, mt: 8, borderRadius: 2 }}>
                     <Box sx={{ textAlign: 'center', mb: 3 }}>
                         {/* <img src={"/lbm.png"} alt="Logo" style={{ maxWidth: '250px', marginBottom: '20px' }} /> */}
@@ -44,17 +68,14 @@ const Login = () => {
                         </Button>
                     </Box>
                     <Stack
-                        direction="row"
+                        direction="column"
                         justifyContent="space-between"
                         alignItems="center"
                         spacing={1}
                         style={{ marginTop: 50 }}
                     >
                         <Item style={{ paddingRight: 0, paddingLeft: 0 }}>
-                            <Link to="/passwortvergessen">Passwort Vergessen</Link>
-                        </Item>
-                        <Item style={{ paddingLeft: 0, paddingRight: 0 }}>
-                            <Link to="/registrieren">Registrieren</Link>
+                            <Link to="/passwortvergessen" style={{ color: "#1976d2" }}>Passwort Vergessen</Link>
                         </Item>
                     </Stack>
                 </Paper>

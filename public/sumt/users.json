@@ -1,0 +1,27 @@
+{
+    "number": 5,
+    "lastupdate": "2022-10-10",
+    "profilList": [
+        {
+            "uuid": "1111-2222-3333-4444",
+            "firstname": "Bayon",
+            "name": "Mbayo",
+            "email": "bayon2007@gmail.com",
+            "role": "ADMIN"
+        },
+        {
+            "uuid": "1111-2222-3333-4445",
+            "firstname": "Annie",
+            "name": "Müller",
+            "email": "annie2001@gmail.com",
+            "role": "MANAGER"
+        },
+        {
+            "uuid": "1111-2222-3333-4446",
+            "firstname": "Renate",
+            "name": "Marburg",
+            "email": "renate1967@gmail.com",
+            "role": "USER"
+        }
+    ]
+}

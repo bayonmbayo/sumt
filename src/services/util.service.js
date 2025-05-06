@@ -1,7 +1,9 @@
 import moment from 'moment-timezone';
 
 export const util = {
-    convertToGermanyTime
+    convertToGermanyTime,
+    isValidEmail,
+    isValidPassword
 };
 
 function convertToGermanyTime(utcDateString) {
@@ -17,4 +19,14 @@ function convertToGermanyTime(utcDateString) {
 
     // Format the date as a string in Germany timezone
     return dateInGermany.format('DD.MM.YYYY HH:mm:ss');
+}
+
+function isValidEmail(email) {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+}
+
+function isValidPassword(password) {
+    const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,}$/;
+    return regex.test(password);
 }

@@ -58,6 +58,10 @@ const MenuListComposition = () => {
             navigate("/")
         }
 
+        if (event.target.id === "users") {
+            navigate("/users")
+        }
+
         setOpen(false);
     };
 
@@ -119,7 +123,7 @@ const MenuListComposition = () => {
                                         aria-labelledby="composition-button"
                                         onKeyDown={handleListKeyDown}
                                     >
-                                        <MenuItem onClick={handleClose} id="profile">Profile</MenuItem>
+                                        <MenuItem onClick={handleClose} id="users">Users</MenuItem>
                                         <MenuItem onClick={handleClose} id="profile">My account</MenuItem>
                                         <MenuItem onClick={handleClose} id="logout">Logout</MenuItem>
                                     </MenuList>
