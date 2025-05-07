@@ -10,7 +10,7 @@ import { Box, Button, CircularProgress, ClickAwayListener, Container, Grid, Grow
 import { useEffect, useRef, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { transferActions } from '../actions/transfer.actions';
 import { Spinner } from '../assets/spinner';
 import { util } from '../services';
@@ -26,12 +26,22 @@ const Home = () => {
 
 export const HomeNavigation = () => {
     const navigate = useNavigate()
+    const location = useLocation();
 
     const goToTransfers = () => {
         navigate("/transfers")
     }
 
     const goToNewTransfer = () => {
+        if (location.pathname.includes("/users") ||
+            location.pathname.includes("/users/") ||
+            location.pathname.includes("/newuser") ||
+            location.pathname.includes("/newuser/")
+        ) {
+            navigate("/newuser")
+            return;
+        }
+
         navigate("/new")
     }
 

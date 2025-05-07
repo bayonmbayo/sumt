@@ -95,20 +95,6 @@ const User = ({ data, key, index }) => {
         setIsClicked(!isClicked);
     };
 
-    const coordinatePairs = data.coordinates?.[0]?.[0]
-    var polyCoordinates;
-
-    // console.log(coordinatePairs);
-    if (Array.isArray(coordinatePairs)) {
-        polyCoordinates = coordinatePairs
-            .map(pair => Array.isArray(pair) ? pair.join(', ') : '')
-            .join(' | ');
-
-        // console.log(polyCoordinates);
-    } else {
-        console.error('Coordinate data is missing or malformed');
-    }
-
     var user = data.firstname + " " + data.name + " - " + data.email
 
     return (
@@ -206,7 +192,7 @@ const User = ({ data, key, index }) => {
                         // cursor: isHovered ? 'pointer' : 'auto'
                     }}>
                     <div style={{ margin: 20 }}>
-                        <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ padding: 20 }}>
+                        <Typography variant="h6" fontWeight="bold" color="text.secondary" style={{ padding: 20 }}>
                             Details
                         </Typography>
                         {/* <Typography variant="body2" color="text.secondary" style={{ padding: 10 }}>
