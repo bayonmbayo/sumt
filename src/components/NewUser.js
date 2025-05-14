@@ -155,8 +155,12 @@ const NewUserBody = ({ user, loading, update }) => {
         var email = emailRef.current.value;
         var vorname = vornameRef.current.value;
         var nachname = nachnameRef.current.value;
-        var password = passwordRef.current.value;
-        var passwordre = passwordreRef.current.value;
+        var password, passwordre;
+
+        if (!update || update && showChangePassword) {
+            password = passwordRef.current.value;
+            passwordre = passwordreRef.current.value;
+        }
 
         if (!email || !util.isValidEmail(email.trim())) {
             setErrorEmail(true)
