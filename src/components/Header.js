@@ -1,6 +1,6 @@
 import MenuIcon from '@mui/icons-material/Menu';
 import { AppBar, Box, Container, Toolbar, Typography } from '@mui/material';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 // import logo from '/lbm.png';
 
 import Button from '@mui/material/Button';
@@ -11,24 +11,35 @@ import MenuList from '@mui/material/MenuList';
 import Paper from '@mui/material/Paper';
 import Popper from '@mui/material/Popper';
 import Stack from '@mui/material/Stack';
+import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { userActions } from '../actions/user.actions';
+import logo from './lbm.png';
 
 const Header = () => {
+    const dispatch = useDispatch()
+    const user = useSelector((state) => state.user.user)
+
+    useEffect(() => {
+        dispatch(userActions.session())
+    }, [])
+
+
     return (
         <>
             <AppBar position="fixed" color="primary">
                 <Toolbar sx={{ justifyContent: 'space-between' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <Typography variant="h5" fontWeight="bold" gutterBottom style={{ margin: 0 }}>
-                            <Link to="/transfers" style={{ color: '#fff', textDecoration: 'none' }}>FLISTRA2NEO</Link>
+                            <Link to={user ? "/transfers" : "/"} style={{ color: '#fff', textDecoration: 'none' }}>FLISTRA2NEO</Link>
                         </Typography>
                     </Box>
-                    <MenuListComposition />
+                    {user ? <MenuListComposition /> : null}
                 </Toolbar>
             </AppBar>
             <Container>
                 <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: 5 }}>
-                    <img src="./lbm.png" alt="Logo" style={{ height: '100px', paddingTop: 50 }} />
+                    <img src={logo} alt="Logo" style={{ height: '100px', paddingTop: 50 }} />
                 </Box>
             </Container>
         </>
@@ -38,6 +49,8 @@ const Header = () => {
 const MenuListComposition = () => {
     const [open, setOpen] = React.useState(false);
     const anchorRef = useRef(null);
+    const user = useSelector((state) => state.user.user)
+    const dispatch = useDispatch()
 
     const navigate = useNavigate();
 
@@ -55,11 +68,16 @@ const MenuListComposition = () => {
         }
 
         if (event.target.id === "logout") {
+            dispatch(userActions.logout())
             navigate("/")
         }
 
         if (event.target.id === "users") {
             navigate("/users")
+        }
+
+        if (event.target.id === "profile") {
+            navigate('/user/' + user.uuid)
         }
 
         setOpen(false);
@@ -123,7 +141,7 @@ const MenuListComposition = () => {
                                         aria-labelledby="composition-button"
                                         onKeyDown={handleListKeyDown}
                                     >
-                                        <MenuItem onClick={handleClose} id="users">Users</MenuItem>
+                                        {user && user.role && user.role.includes("ADMIN") ? <MenuItem onClick={handleClose} id="users">Users</MenuItem> : null}
                                         <MenuItem onClick={handleClose} id="profile">My account</MenuItem>
                                         <MenuItem onClick={handleClose} id="logout">Logout</MenuItem>
                                     </MenuList>

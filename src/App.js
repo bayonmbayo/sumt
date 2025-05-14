@@ -5,12 +5,14 @@ import { Confirmation } from './components/Confirmation';
 import Header from './components/Header';
 import Home from './components/Home';
 import Login from './components/Login';
+import { NewPassword } from './components/NewPassword';
 import NewTransfer from './components/NewTransfer';
 import NewUser from './components/NewUser';
 import { PasswortVergessen } from './components/PasswortVergessen';
 import Settings from './components/Settings';
 import Users from './components/Users';
 import ViewTransfer from './components/ViewTransfer';
+import { ProtectedLayout } from './helpers/auth';
 
 
 // Layout component to include Header
@@ -30,13 +32,22 @@ const router = createBrowserRouter(
         { path: 'login', element: <Login /> },
         // { path: 'registrieren', element: <Registrieren /> }, // still commented
         { path: 'confirmation/:token', element: <Confirmation /> },
+        { path: 'resettingpassword/:token', element: <NewPassword /> },
         { path: 'passwortvergessen', element: <PasswortVergessen /> },
-        { path: 'transfers', element: <Home /> },
-        { path: 'transfer/:transfer', element: <ViewTransfer /> },
-        { path: 'new', element: <NewTransfer /> },
-        { path: 'settings', element: <Settings /> },
-        { path: 'users', element: <Users /> },
-        { path: 'newuser', element: <NewUser /> },
+
+        {
+          element: <ProtectedLayout />, // this wraps private routes
+          children: [
+            { path: 'transfers', element: <Home /> },
+            { path: 'transfer/:transfer', element: <ViewTransfer /> },
+            { path: 'new', element: <NewTransfer /> },
+            { path: 'settings', element: <Settings /> },
+            { path: 'users', element: <Users /> },
+            { path: 'newuser', element: <NewUser update={false} /> },
+            { path: 'user/:user', element: <NewUser update={true} /> },
+          ]
+        },
+
         { path: 'about', element: <Home /> },
       ],
     },

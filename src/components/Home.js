@@ -28,17 +28,19 @@ export const HomeNavigation = () => {
     const navigate = useNavigate()
     const location = useLocation();
 
+
     const goToTransfers = () => {
         navigate("/transfers")
     }
 
     const goToNewTransfer = () => {
-        if (location.pathname.includes("/users") ||
+        if (location.pathname.includes("/user") ||
+            location.pathname.includes("/users") ||
             location.pathname.includes("/users/") ||
             location.pathname.includes("/newuser") ||
             location.pathname.includes("/newuser/")
         ) {
-            navigate("/newuser")
+            navigate("/newuser", { replace: true })
             return;
         }
 

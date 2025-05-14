@@ -24,3 +24,8 @@ code {
 .css-8ndowl {
   z-index: 1100000 !important;
 }
+
+.swal2-container {
+  z-index: 2000 !important;
+  /* z-index of modal on 1300 */
+}

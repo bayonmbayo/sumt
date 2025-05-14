@@ -1,10 +1,11 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Button, Container, Grid, Paper, Stack, styled, Typography } from "@mui/material";
+import { Box, Button, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Grid, Paper, Stack, styled, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { profileActions } from '../actions/profile.actions';
 import { Spinner } from "../assets/spinner";
+import { profileService } from '../services/profile.service';
 import { HomeNavigation } from "./Home";
 
 
@@ -27,7 +28,7 @@ const Users = () => {
 }
 
 const ViewUserBody = ({ transfer }) => {
-    const [value, setValue] = useState('female');
+    const u = useSelector((state) => state.user.user)
 
     const p = useSelector(state => state.profiles.profilList);
     const l = useSelector(state => state.profiles.loading);
@@ -46,6 +47,21 @@ const ViewUserBody = ({ transfer }) => {
     useEffect(() => {
         setProfileList(p);
     }, [p]);
+
+
+    if (u && u.role && (u.role.includes("MANAGER") || u.role.includes("USER"))) {
+        return (
+            <Container>
+                <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
+                    {"New User"}
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary" style={{ paddingTop: 10, paddingBottom: 30 }}>
+                    Diese Funktion ist nicht verfügbar.
+                </Typography>
+            </Container>
+        );
+    }
 
     if (l) {
         return (
@@ -90,15 +106,50 @@ const ViewUserBody = ({ transfer }) => {
 
 const User = ({ data, key, index }) => {
     const [isClicked, setIsClicked] = useState(false);
+    const navigate = useNavigate()
+    const dispatch = useDispatch()
+    const [showSpinner, setShowSpinner] = useState(false);
 
     const handleClick = () => {
         setIsClicked(!isClicked);
     };
 
+    const updateUser = (e) => {
+        e.stopPropagation();
+
+        navigate('/user/' + data.uuid)
+    }
+
+    const [openDeleteUser, setOpenDeleteUser] = useState(false);
+
+    const openConfirmDelete = (e) => {
+        e.stopPropagation();
+
+        setOpenDeleteUser(true);
+    };
+
+    const closeDeleteUser = () => {
+        setOpenDeleteUser(false);
+    };
+
+    const deleteUser = (e) => {
+        setShowSpinner(true)
+        profileService.deleteUser(data.uuid).then(res => {
+            setShowSpinner(false)
+            dispatch(profileActions.getProfileList())
+        }).catch(res => {
+            setShowSpinner(false)
+            dispatch(profileActions.getProfileList())
+        });
+    }
+
     var user = data.firstname + " " + data.name + " - " + data.email
+    var fullname = data.firstname + " " + data.name
 
     return (
         <>
+            <ConfirmDelete openDeleteUser={openDeleteUser} closeDeleteUser={closeDeleteUser} deleteUser={deleteUser} fullname={fullname} />
+            <Spinner show={showSpinner} />
             <Box
                 //onMouseEnter={() => setIsHovered(true)}
                 //onMouseLeave={() => setIsHovered(false)}
@@ -155,20 +206,26 @@ const User = ({ data, key, index }) => {
                             spacing={1}
                         >
                             <Item>
-                                <Button style={{
-                                    backgroundColor: '#1976d2',
-                                    color: '#fff',
-                                    textTransform: 'uppercase'
-                                }}>Update</Button>
+                                <Button
+                                    style={{
+                                        backgroundColor: '#1976d2',
+                                        color: '#fff',
+                                        textTransform: 'uppercase'
+                                    }}
+                                    onClick={updateUser}
+                                >Update</Button>
                             </Item>
                             <Item>
-                                <Button style={{
-                                    backgroundColor: '#1976d2',
-                                    color: '#fff',
-                                    textTransform: 'uppercase',
-                                    minWidth: 0,
-                                    width: 40
-                                }}><DeleteIcon /></Button>
+                                <Button
+                                    style={{
+                                        backgroundColor: '#1976d2',
+                                        color: '#fff',
+                                        textTransform: 'uppercase',
+                                        minWidth: 0,
+                                        width: 40
+                                    }}
+                                    onClick={openConfirmDelete}
+                                ><DeleteIcon /></Button>
                             </Item>
                         </Stack>
                     </Item>
@@ -192,15 +249,21 @@ const User = ({ data, key, index }) => {
                         // cursor: isHovered ? 'pointer' : 'auto'
                     }}>
                     <div style={{ margin: 20 }}>
-                        <Typography variant="h6" fontWeight="bold" color="text.secondary" style={{ padding: 20 }}>
+                        <Typography variant="h6" fontWeight="bold" color="text.secondary" style={{ padding: 10 }}>
                             Details
                         </Typography>
-                        {/* <Typography variant="body2" color="text.secondary" style={{ padding: 10 }}>
-                            - Type : {data.type}
+                        <Typography variant="body2" color="text.secondary" style={{ padding: 5 }}>
+                            - Vorname : {data.firstname}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" style={{ padding: 10 }}>
-                            - Coordinates : {polyCoordinates}
-                        </Typography> */}
+                        <Typography variant="body2" color="text.secondary" style={{ padding: 5 }}>
+                            - Nachname : {data.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" style={{ padding: 5 }}>
+                            - Email / Benutzername : {data.email}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" style={{ padding: 5 }}>
+                            - Role : {data.role}
+                        </Typography>
                     </div>
                 </div> : null}
         </>
@@ -214,5 +277,34 @@ const Item = styled(Paper)(({ theme }) => ({
     color: '#fff',
     boxShadow: 'none'
 }));
+
+export function ConfirmDelete({ openDeleteUser, closeDeleteUser, deleteUser, fullname }) {
+
+    return (
+        <>
+            <Dialog
+                open={openDeleteUser}
+                onClose={closeDeleteUser}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">
+                    {"Delete User"}
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Möchten Sie den Nutzer "{fullname}" löschen ?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="contained" onClick={closeDeleteUser}>Abbrechen</Button>
+                    <Button variant="contained" onClick={deleteUser} autoFocus>
+                        Löschen
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
+    );
+}
 
 export default Users;

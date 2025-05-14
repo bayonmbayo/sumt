@@ -1,4 +1,5 @@
 import { Box, Button, Container, TextField, Typography } from "@mui/material";
+import { useSelector } from "react-redux";
 import { HomeNavigation } from "./Home";
 
 
@@ -13,6 +14,22 @@ const NewTransfer = () => {
 }
 
 const NewTransferBody = () => {
+    const u = useSelector((state) => state.user.user)
+
+    if (u && u.role && u.role.includes("USER")) {
+        return (
+            <Container>
+                <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
+                    {"New Transfer"}
+                </Typography>
+
+                <Typography variant="body2" color="text.secondary" style={{ paddingTop: 10, paddingBottom: 30 }}>
+                    Diese Funktion ist nicht verfügbar.
+                </Typography>
+            </Container>
+        );
+    }
+
     return (
         <>
             <Container>

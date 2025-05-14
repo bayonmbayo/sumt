@@ -6,3 +6,8 @@
         font-size: 0.5rem !important;
     }
 }
+
+.swal2-container {
+    z-index: 2000 !important;
+    /* z-index of modal on 1300 */
+}

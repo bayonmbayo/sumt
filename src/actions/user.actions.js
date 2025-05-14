@@ -54,14 +54,14 @@ function register(profil) {
     }
 }
 
-function login(username, password) {
+function login(credentials) {
     return dispatch => {
-        dispatch(request({ username }));
+        dispatch(request({ credentials }));
 
-        userService.login(username, password)
+        userService.login(credentials)
             .then(res => res.json())
             .then(data => {
-                sessionStorage.setItem('user', JSON.stringify(data));
+                localStorage.setItem('user', JSON.stringify(data));
                 dispatch({ type: userConstants.LOGIN_SUCCESS, payload: data })
             })
             .catch(res => {
@@ -80,7 +80,7 @@ function login(username, password) {
 function session() {
     return dispatch => {
         dispatch(request({ "username": "" }));
-        dispatch(success(JSON.parse(sessionStorage.getItem('user'))))
+        dispatch(success(JSON.parse(localStorage.getItem('user'))))
     };
     function request(payload) { return { type: userConstants.LOGIN_REQUEST, payload } }
     function success(payload) { return { type: userConstants.LOGIN_SESSION, payload } }

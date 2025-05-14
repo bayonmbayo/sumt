@@ -59,6 +59,22 @@ export function profil(state = { loading: false }, action) {
                 error: action.payload[0],
                 userdata: action.payload[1],
             };
+        case profileConstants.CREATE_PROFIL_SUCCESS_DONE:
+            return {
+                done: false,
+                loading: false,
+                error: undefined,
+                userdata: Object.keys({ ...state.userdata }).length === 0 ? "" : { ...state.userdata },
+                profil: Object.keys({ ...state.profil }).length === 0 ? "" : { ...state.profil },
+            };
+        case profileConstants.CREATE_PROFIL_FAILURE_DONE:
+            return {
+                done: false,
+                loading: false,
+                error: Object.keys({ ...state.error }).length === 0 ? "" : { ...state.error },
+                profil: Object.keys({ ...state.profil }).length === 0 ? "" : { ...state.profil },
+                userdata: Object.keys({ ...state.userdata }).length === 0 ? "" : { ...state.userdata },
+            };
         case profileConstants.UPDATE_PROFIL_REQUEST:
             return {
                 done: false,
@@ -82,6 +98,22 @@ export function profil(state = { loading: false }, action) {
                 profil: Object.keys({ ...state.profil }).length === 0 ? "" : { ...state.profil },
                 error: action.payload[0],
                 userdata: action.payload[1],
+            };
+        case profileConstants.UPDATE_PROFIL_SUCCESS_DONE:
+            return {
+                done: false,
+                loading: false,
+                error: undefined,
+                profil: Object.keys({ ...state.profil }).length === 0 ? "" : { ...state.profil },
+                userdata: Object.keys({ ...state.userdata }).length === 0 ? "" : { ...state.userdata },
+            };
+        case profileConstants.UPDATE_PROFIL_FAILURE_DONE:
+            return {
+                done: false,
+                loading: false,
+                profil: Object.keys({ ...state.profil }).length === 0 ? "" : { ...state.profil },
+                error: Object.keys({ ...state.error }).length === 0 ? "" : { ...state.error },
+                userdata: Object.keys({ ...state.userdata }).length === 0 ? "" : { ...state.userdata },
             };
 
         default:
