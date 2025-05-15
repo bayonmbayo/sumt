@@ -49,59 +49,59 @@ const ViewUserBody = ({ transfer }) => {
     }, [p]);
 
 
-    if (u && u.role && (u.role.includes("MANAGER") || u.role.includes("USER"))) {
-        return (
-            <Container>
-                <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
-                    {"Users"}
-                </Typography>
-
-                <Typography variant="body2" color="text.secondary" style={{ paddingTop: 10, paddingBottom: 30 }}>
-                    Diese Funktion ist nicht verfügbar.
-                </Typography>
-            </Container>
-        );
-    }
-
-    if (l) {
-        return (
-            <>
-                <Container>
-                    <Spinner show={l} />
-                    <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
-                        Users
-                    </Typography>
-                </Container>
-            </>
-        )
-    } else {
-        if (p && p.profilList) {
+    if (u && u.role && (u.role.includes("ADMIN"))) {
+        if (l) {
             return (
                 <>
                     <Container>
+                        <Spinner show={l} />
                         <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
                             Users
                         </Typography>
-
-                        <Grid
-                            container
-                            spacing={4}
-                            // className="marginLaptop"
-                            justifyItems="center"
-                            style={{ marginTop: 30 }}
-                        >
-                            {getPaginatedData().map((d, idx) => (
-                                <Grid key={idx} size={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 12 }}>
-                                    <User key={idx} index={idx} data={d} />
-                                </Grid>
-                            ))}
-                        </Grid>
-
                     </Container>
                 </>
-            );
-        }
-    };
+            )
+        } else {
+            if (p && p.profilList) {
+                return (
+                    <>
+                        <Container>
+                            <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
+                                Users
+                            </Typography>
+
+                            <Grid
+                                container
+                                spacing={4}
+                                // className="marginLaptop"
+                                justifyItems="center"
+                                style={{ marginTop: 30 }}
+                            >
+                                {getPaginatedData().map((d, idx) => (
+                                    <Grid key={idx} size={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 12 }}>
+                                        <User key={idx} index={idx} data={d} />
+                                    </Grid>
+                                ))}
+                            </Grid>
+
+                        </Container>
+                    </>
+                );
+            }
+        };
+    }
+
+    return (
+        <Container>
+            <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
+                {"Users"}
+            </Typography>
+
+            <Typography variant="body2" color="text.secondary" style={{ paddingTop: 10, paddingBottom: 30 }}>
+                Diese Funktion ist nicht verfügbar.
+            </Typography>
+        </Container>
+    );
 }
 
 const User = ({ data, key, index }) => {
