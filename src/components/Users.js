@@ -53,7 +53,7 @@ const ViewUserBody = ({ transfer }) => {
         return (
             <Container>
                 <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
-                    {"New User"}
+                    {"Users"}
                 </Typography>
 
                 <Typography variant="body2" color="text.secondary" style={{ paddingTop: 10, paddingBottom: 30 }}>

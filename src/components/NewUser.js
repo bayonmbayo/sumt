@@ -113,7 +113,12 @@ const NewUserBody = ({ user, loading, update }) => {
                     if (update) {
                         setShowSpinner(false);
                         dispatch({ type: profileConstants.UPDATE_PROFIL_SUCCESS_DONE });
-                        navigate("/users")
+
+                        if (u && u.role && (u.role.includes("ADMIN"))) {
+                            navigate("/users")
+                        } else {
+                            navigate("/transfers")
+                        }
 
                         // process later if the admin self changes his role
                         // localStorage.setItem('user', JSON.stringify(data));
@@ -126,7 +131,13 @@ const NewUserBody = ({ user, loading, update }) => {
                     } else {
                         setShowSpinner(false);
                         dispatch({ type: profileConstants.CREATE_PROFIL_SUCCESS_DONE });
-                        navigate("/users")
+
+                        if (u && u.role && (u.role.includes("ADMIN"))) {
+                            navigate("/users")
+                        } else {
+                            navigate("/transfers")
+                        }
+
                         Toast.fire({
                             icon: "success",
                             title: "The user was successfully registered"
