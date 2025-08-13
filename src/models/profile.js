@@ -30,3 +30,10 @@ export class PasswordClass {
         this.token = "";
     }
 }
+
+export class NumberOfFeatures {
+
+    constructor() {
+        this.featureDataCount = "";
+    }
+}

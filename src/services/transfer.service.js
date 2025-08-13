@@ -1,3 +1,4 @@
+import { workerConstants } from "../constants";
 
 
 export const transferService = {
@@ -5,9 +6,12 @@ export const transferService = {
     getAllTransfers
 };
 
-function getTransfer() {
+
+const WORKER = workerConstants.WORKER
+
+function getTransfer(transfer) {
     console.log("in Service transfer")
-    return fetch("transfer.json",
+    return fetch(WORKER + "transfers/" + transfer,
         {
             method: 'GET',
             headers: { 'Accept': 'application/json', /*'mode': "no-cors", "Access-Control-Allow-Origin": "*"*/ }
@@ -16,7 +20,7 @@ function getTransfer() {
 
 function getAllTransfers() {
     console.log("in Service transfer")
-    return fetch("transfer2.json",
+    return fetch(WORKER + "transfers",
         {
             method: 'GET',
             headers: { 'Accept': 'application/json', /*'mode': "no-cors", "Access-Control-Allow-Origin": "*"*/ }

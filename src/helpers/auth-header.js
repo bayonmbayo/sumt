@@ -10,3 +10,14 @@ export function authHeaderWithJSON() {
         return { 'Content-Type': 'application/json' };
     }
 }
+
+export function authHeaderWithoutContentType() {
+    // return authorization header with jwt token
+    let user = JSON.parse(sessionStorage.getItem('user'));
+
+    if (user && user.jwt) {
+        return { Authorization: `Bearer ${user.jwt}` };
+    } else {
+        return {};
+    }
+}

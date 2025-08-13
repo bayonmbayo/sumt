@@ -7,6 +7,11 @@ import { transferActions } from "../actions/transfer.actions";
 import { Spinner } from "../assets/spinner";
 import { HomeNavigation } from "./Home";
 
+import CheckCircleSharpIcon from '@mui/icons-material/CheckCircleSharp';
+import ErrorSharpIcon from '@mui/icons-material/ErrorSharp';
+
+import ReactJson from "react-json-view";
+
 
 
 
@@ -16,7 +21,7 @@ const ViewTransfer = () => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        dispatch(transferActions.getTransfer())
+        dispatch(transferActions.getTransfer(transfer))
     }, []);
 
     return (
@@ -41,7 +46,7 @@ const ViewTransferBody = ({ transfer }) => {
         const startIndex = page * dataLimit - dataLimit;
         const endIndex = startIndex + dataLimit;
         // console.log(b.bauprojekte)
-        return b.bauprojekte.slice(startIndex, endIndex);
+        return b.slice(startIndex, endIndex);
     };
 
     const handleChange = (event) => {
@@ -64,7 +69,7 @@ const ViewTransferBody = ({ transfer }) => {
             </>
         )
     } else {
-        if (b && b.bauprojekte) {
+        if (b) {
             return (
                 <>
                     <Container>
@@ -144,37 +149,35 @@ const Bauprojekt = ({ data, key, index }) => {
                     </Item>
                     <Item>
                         <Typography variant="h5" fontWeight="bold" color="#fff">
-                            {data.properties.title}
+                            {data.title} {data.transfered ? <CheckCircleSharpIcon style={{ paddingTop: 3, color: '#00ff00' }} /> : <ErrorSharpIcon style={{ marginTop: 3, color: '#ff0000' }} />}
                         </Typography>
                     </Item>
                 </Stack>
             </Button>
             {isClicked ?
-                <div
-                    //onMouseEnter={() => setIsHovered(true)}
-                    //onMouseLeave={() => setIsHovered(false)}
-                    //onClick={() => handleClick()}
-                    style={{
-                        width: '100%',
-                        // height: 50,
-                        backgroundColor: '#F3F4F9',
-                        // transition: 'background-color 0.3s ease',
-                        borderRadius: 10,
-                        marginTop: 10,
-                        justifyContent: 'flex-start'
-                        // border: '2px solid',
-                        // boxShadow: isHovered ? '10px 5px 5px #1976d2' : 'none',
-                        // cursor: isHovered ? 'pointer' : 'auto'
-                    }}>
-                    <div style={{ margin: 20 }}>
+                <div style={{
+                    margin: 20,
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    gap: '20px'
+                }}>
+                    {/* Column 1 */}
+                    <div style={{ flex: 1, minWidth: '250px' }}>
                         <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ padding: 20 }}>
-                            Details
+                            Flistra
                         </Typography>
                         <Typography variant="body2" color="text.secondary" style={{ padding: 10 }}>
-                            - Type : {data.type}
+                            <JsonViewer data={data.flistra} />
+                        </Typography>
+                    </div>
+
+                    {/* Column 2 */}
+                    <div style={{ flex: 1, minWidth: '250px' }}>
+                        <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ padding: 20 }}>
+                            KSP
                         </Typography>
                         <Typography variant="body2" color="text.secondary" style={{ padding: 10 }}>
-                            - Coordinates : {polyCoordinates}
+                            <JsonViewer data={data.ksp} />
                         </Typography>
                     </div>
                 </div> : null}
@@ -189,5 +192,44 @@ const Item = styled(Paper)(({ theme }) => ({
     color: '#fff',
     boxShadow: 'none'
 }));
+
+const JsonViewer = ({ data }) => {
+    return (
+        <div style={{
+            padding: "10px",
+            backgroundColor: "#f9f9f9", // quasi white background
+            borderRadius: "8px",
+            border: "2px solid #1976d2", // blue border
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+        }}>
+            <ReactJson
+                src={JSON.parse(data)}
+                theme={{
+                    base00: "#f9f9f9", // Background color
+                    base01: "#e0e0e0",
+                    base02: "#d0d0d0",
+                    base03: "#555555",
+                    base04: "#333333",
+                    base05: "#000000", // Main text color
+                    base06: "#000000",
+                    base07: "#000000",
+                    base08: "#ff0000",
+                    base09: "#ff9900",
+                    base0A: "#ffcc00",
+                    base0B: "#4caf50",
+                    base0C: "#00bcd4",
+                    base0D: "#2196f3",
+                    base0E: "#9c27b0",
+                    base0F: "#795548"
+                }}
+                collapsed={1} // Collapses nested objects by default, set to false for fully expanded
+                enableClipboard={true}
+                displayDataTypes={false} // Hide type info
+                displayObjectSize={false} // Hide size info
+                indentWidth={2}
+            />
+        </div>
+    );
+};
 
 export default ViewTransfer;

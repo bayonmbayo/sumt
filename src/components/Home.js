@@ -1,33 +1,58 @@
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import SearchIcon from '@mui/icons-material/Search';
 import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
 import SubjectIcon from '@mui/icons-material/Subject';
 import SyncIcon from '@mui/icons-material/Sync';
 import SyncProblemIcon from '@mui/icons-material/SyncProblem';
-import { Box, Button, CircularProgress, ClickAwayListener, Container, Grid, Grow, IconButton, MenuItem, MenuList, Paper, Popper, Stack, styled, TextField, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, ClickAwayListener, Container, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Grow, IconButton, MenuItem, MenuList, Paper, Popper, Stack, styled, TextField, Typography } from "@mui/material";
+import InputAdornment from '@mui/material/InputAdornment';
 import { useEffect, useRef, useState } from 'react';
 import { useWindowDimensions } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { transferActions } from '../actions/transfer.actions';
 import { Spinner } from '../assets/spinner';
+import { workerConstants } from '../constants';
 import { util } from '../services';
 
 const Home = () => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+
+    // Debounce search term to improve performance
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 300); // 300ms delay
+
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
+
+    const handleSearchChange = (term) => {
+        setSearchTerm(term);
+    };
+
     return (
         <div style={{ marginBottom: 100 }}>
-            <HomeNavigation />
-            <Transfers />
+            <HomeNavigation onSearchChange={handleSearchChange} searchTerm={searchTerm} />
+            <Transfers searchTerm={debouncedSearchTerm} />
         </div>
     );
 }
 
-export const HomeNavigation = () => {
+const WORKER = workerConstants.WORKER
+
+export const HomeNavigation = ({ onSearchChange, searchTerm }) => {
     const navigate = useNavigate()
     const location = useLocation();
-
+    const [modalOpen, setModalOpen] = useState(false);
+    const [featureCount, setFeatureCount] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const goToTransfers = () => {
         navigate("/transfers")
@@ -51,50 +76,237 @@ export const HomeNavigation = () => {
         navigate("/settings")
     }
 
-    return (
+    const handleSimulateAutoSync = () => {
+        setModalOpen(true);
+    }
 
-        <Container>
-            <Stack
-                direction="row"
-                justifyContent="flex-start"
-                alignItems="center"
-                p={1}
+    const handleCloseModal = () => {
+        setModalOpen(false);
+        setFeatureCount('');
+        setIsSubmitting(false);
+    }
+
+    const handleSearchChange = (event) => {
+        const value = event.target.value;
+        if (onSearchChange) {
+            onSearchChange(value);
+        }
+    };
+
+    const handleSubmitFeatureData = async () => {
+        if (!featureCount || isNaN(featureCount) || parseInt(featureCount) <= 0) {
+            alert('Please enter a valid number greater than 0');
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const payload = {
+                featureDataCount: parseInt(featureCount)
+            };
+
+            const response = await fetch(WORKER + "makesimulation", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                console.log('Auto-sync simulation started:', result);
+                handleCloseModal();
+                // Optionally refresh the transfers list or show success message
+            } else {
+                throw new Error('Failed to start simulation');
+            }
+        } catch (error) {
+            console.error('Error submitting feature data:', error);
+            alert('Failed to start simulation. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+            navigate(0)
+        }
+    }
+
+    return (
+        <>
+            <Container>
+                <Stack
+                    direction="row"
+                    justifyContent="flex-start"
+                    alignItems="center"
+                    p={1}
+                >
+                    <Item>
+                        <Button
+                            size="large"
+                            variant="contained"
+                            style={{ borderRadius: 20, minWidth: 0, padding: 15, marginRight: 10 }}
+                            onClick={() => goToTransfers()}
+                        >
+                            <RemoveRedEyeIcon style={{ marginRight: 10 }} />View Transfers
+                        </Button>
+                    </Item>
+                    <Item>
+                        <Button
+                            size="large"
+                            variant="outlined"
+                            style={{
+                                borderRadius: 20,
+                                minWidth: 0,
+                                padding: 15,
+                                borderColor: '#1976d2',
+                                color: '#1976d2'
+                            }}
+                            onClick={handleSimulateAutoSync}
+                        >
+                            <SyncIcon style={{ marginRight: 10 }} />Simulate Auto-Sync
+                        </Button>
+                    </Item>
+                </Stack>
+                <Stack
+                    direction="row"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    spacing={1}
+                >
+                    <Item>
+                        <Stack
+                            direction="row"
+                            justifyContent="flex-start"
+                            alignItems="center"
+                            spacing={1}
+                        >
+                            <Item>
+                                <Button size="large" variant="contained" style={{ borderRadius: 20, minWidth: 0, padding: 15 }} onClick={() => goToNewTransfer()}><AddCircleIcon style={{ marginRight: 10 }} />New</Button>
+                            </Item>
+                            <Item>
+                                <Button size="large" variant="contained" style={{ borderRadius: 20, minWidth: 0, padding: 15 }} onClick={() => goToSettings()}><SettingsSuggestIcon style={{ marginRight: 10 }} /> Settings</Button>
+                            </Item>
+                        </Stack>
+                    </Item>
+                    <Item>
+                        <TextField
+                            fullWidth
+                            label="Search"
+                            placeholder="Search Transfer"
+                            margin="normal"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                            InputProps={{
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon style={{ color: '#1976d2' }} />
+                                    </InputAdornment>
+                                ),
+                                style: { borderRadius: 10 }
+                            }}
+                            InputLabelProps={{
+                                style: { color: '#1976d2' }
+                            }}
+                        />
+                    </Item>
+                </Stack>
+            </Container>
+
+            {/* Simulate Auto-Sync Modal */}
+            <Dialog
+                open={modalOpen}
+                onClose={handleCloseModal}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{
+                    style: {
+                        borderRadius: 20,
+                        padding: 20
+                    }
+                }}
             >
-                <Item>
-                    <Button size="large" variant="contained" style={{ borderRadius: 20, minWidth: 0, padding: 15 }} onClick={() => goToTransfers()}><RemoveRedEyeIcon style={{ marginRight: 10 }} />View Transfers</Button>
-                </Item>
-            </Stack>
-            <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                spacing={1}
-            >
-                <Item>
-                    <Stack
-                        direction="row"
-                        justifyContent="flex-start"
-                        alignItems="center"
-                        spacing={1}
+                <DialogTitle
+                    style={{
+                        color: '#1976d2',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        fontSize: '1.5rem'
+                    }}
+                >
+                    <SyncIcon style={{ marginRight: 10, verticalAlign: 'middle' }} />
+                    Simulate Auto-Sync
+                </DialogTitle>
+
+                <DialogContent style={{ paddingTop: 20 }}>
+                    <Typography
+                        variant="body1"
+                        style={{
+                            marginBottom: 20,
+                            color: '#666',
+                            textAlign: 'center'
+                        }}
                     >
-                        <Item>
-                            <Button size="large" variant="contained" style={{ borderRadius: 20, minWidth: 0, padding: 15 }} onClick={() => goToNewTransfer()}><AddCircleIcon style={{ marginRight: 10 }} />New</Button>
-                        </Item>
-                        <Item>
-                            <Button size="large" variant="contained" style={{ borderRadius: 20, minWidth: 0, padding: 15 }} onClick={() => goToSettings()}><SettingsSuggestIcon style={{ marginRight: 10 }} /> Settings</Button>
-                        </Item>
-                    </Stack>
-                </Item>
-                <Item>
+                        Enter the number of Feature-Data records you want to generate and transfer:
+                    </Typography>
+
                     <TextField
                         fullWidth
-                        label="Search"
-                        placeholder="Search Transfer"
-                        margin="normal"
+                        label="Number of Feature-Data"
+                        type="number"
+                        value={featureCount}
+                        onChange={(e) => setFeatureCount(e.target.value)}
+                        placeholder="e.g., 100"
+                        variant="outlined"
+                        style={{ marginTop: 10 }}
+                        InputProps={{
+                            style: { borderRadius: 10 }
+                        }}
+                        InputLabelProps={{
+                            style: { color: '#1976d2' }
+                        }}
                     />
-                </Item>
-            </Stack>
-        </Container>
+                </DialogContent>
+
+                <DialogActions style={{ padding: '20px 24px', justifyContent: 'center' }}>
+                    <Button
+                        onClick={handleCloseModal}
+                        variant="outlined"
+                        style={{
+                            borderRadius: 20,
+                            padding: '10px 20px',
+                            borderColor: '#1976d2',
+                            color: '#1976d2',
+                            marginRight: 10
+                        }}
+                        disabled={isSubmitting}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleSubmitFeatureData}
+                        variant="contained"
+                        style={{
+                            borderRadius: 20,
+                            padding: '10px 20px',
+                            backgroundColor: '#1976d2'
+                        }}
+                        disabled={isSubmitting || !featureCount}
+                    >
+                        {isSubmitting ? (
+                            <>
+                                <CircularProgress size={20} style={{ marginRight: 10, color: 'white' }} />
+                                Starting...
+                            </>
+                        ) : (
+                            <>
+                                <PlayArrowIcon style={{ marginRight: 5 }} />
+                                Start Simulation
+                            </>
+                        )}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     );
 };
 
@@ -106,7 +318,7 @@ const Item = styled(Paper)(({ theme }) => ({
     boxShadow: 'none'
 }));
 
-const Transfers = () => {
+const Transfers = ({ searchTerm }) => {
     const t = useSelector(state => state.transfers.transfers);
     const [transferList, setTransferList] = useState(t);
     const l = useSelector(state => state.transfers.loading);
@@ -114,13 +326,38 @@ const Transfers = () => {
     const dispatch = useDispatch();
 
     const [page, setPage] = useState(1);
-    const [dataLimit, setDataLimit] = useState(15);
+    const [dataLimit, setDataLimit] = useState(1000);
+
+    const getFilteredData = () => {
+        if (!t || !t.transfers) return [];
+
+        let filtered = t.transfers;
+
+        // Apply search filter if searchTerm exists
+        if (searchTerm && searchTerm.trim() !== '') {
+            const lowerSearchTerm = searchTerm.toLowerCase().trim();
+            filtered = t.transfers.filter(transfer => {
+                return (
+                    (transfer.title && transfer.title.toLowerCase().includes(lowerSearchTerm)) ||
+                    (transfer.tuid && transfer.tuid.toLowerCase().includes(lowerSearchTerm)) ||
+                    (transfer.auto !== undefined && (transfer.auto ? 'auto' : 'manuell').includes(lowerSearchTerm)) ||
+                    (transfer.status && transfer.status.toString().includes(lowerSearchTerm))
+                );
+            });
+        }
+
+        return filtered;
+    };
 
     const getPaginatedData = () => {
+        const filteredData = getFilteredData();
         const startIndex = page * dataLimit - dataLimit;
         const endIndex = startIndex + dataLimit;
-        // console.log(b.bauprojekte)
-        return t.transfers.slice(startIndex, endIndex);
+        return filteredData.slice(startIndex, endIndex);
+    };
+
+    const handleRefresh = () => {
+        dispatch(transferActions.getAllTransfers());
     };
 
     useEffect(() => {
@@ -130,6 +367,12 @@ const Transfers = () => {
     useEffect(() => {
         setTransferList(t);
     }, [t]);
+
+    useEffect(() => {
+        setTransferList(t);
+        // Reset to first page when search term changes
+        setPage(1);
+    }, [t, searchTerm]);
 
     if (l) {
         return (
@@ -146,9 +389,44 @@ const Transfers = () => {
         if (t && t.transfers) {
             return (
                 <Container>
-                    <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
-                        Transfers
-                    </Typography>
+                    <Stack
+                        direction="row"
+                        justifyContent="space-between"
+                        alignItems="center"
+                        style={{ paddingTop: 30 }}
+                    >
+                        <Item>
+                            <Typography variant="h5" fontWeight="bold" color="text.secondary">
+                                Transfers {searchTerm && `(${getFilteredData().length} results)`}
+                            </Typography>
+                        </Item>
+                        <Item>
+                            <Button
+                                variant="outlined"
+                                onClick={handleRefresh}
+                                disabled={l}
+                                style={{
+                                    borderRadius: 20,
+                                    minWidth: 0,
+                                    padding: '10px 15px',
+                                    borderColor: '#1976d2',
+                                    color: '#1976d2'
+                                }}
+                            >
+                                {l ? (
+                                    <>
+                                        <CircularProgress size={16} style={{ marginRight: 8, color: '#1976d2' }} />
+                                        Refreshing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <RefreshIcon style={{ marginRight: 8 }} />
+                                        Refresh
+                                    </>
+                                )}
+                            </Button>
+                        </Item>
+                    </Stack>
 
                     <Grid
                         container
@@ -157,11 +435,32 @@ const Transfers = () => {
                         justifyItems="center"
                         style={{ marginTop: 30 }}
                     >
-                        {getPaginatedData().map((d, idx) => (
-                            <Grid key={idx} size={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 12 }}>
-                                <Transfer index={idx} data={d} />
+                        {getPaginatedData().length > 0 ? (
+                            getPaginatedData().map((d, idx) => (
+                                <Grid key={idx} size={{ xs: 12, sm: 12, md: 12, lg: 12, xl: 12 }}>
+                                    <Transfer index={idx} data={d} />
+                                </Grid>
+                            ))
+                        ) : (
+                            <Grid size={{ xs: 12 }}>
+                                <div style={{
+                                    textAlign: 'center',
+                                    padding: '40px 20px',
+                                    color: '#666'
+                                }}>
+                                    <SearchIcon style={{ fontSize: 60, color: '#1976d2', marginBottom: 16 }} />
+                                    <Typography variant="h6" style={{ marginBottom: 8 }}>
+                                        {searchTerm ? 'No transfers found' : 'No transfers available'}
+                                    </Typography>
+                                    <Typography variant="body2">
+                                        {searchTerm
+                                            ? `No transfers match "${searchTerm}". Try a different search term.`
+                                            : 'There are no transfers to display at the moment.'
+                                        }
+                                    </Typography>
+                                </div>
                             </Grid>
-                        ))}
+                        )}
                     </Grid>
                 </Container>
             );
@@ -170,7 +469,7 @@ const Transfers = () => {
 }
 
 const Transfer = ({ index, data }) => {
-    const { id, title, auto, status, executedat, bauprojekte, allbauprojekte } = data
+    const { id, tuid, title, auto, status, executedat, bauprojekte, allbauprojekte } = data
     const [isHovered, setIsHovered] = useState(false);
     const [isClicked, setIsClicked] = useState(false);
     const navigate = useNavigate()
@@ -186,7 +485,7 @@ const Transfer = ({ index, data }) => {
     });
 
     const handleClick = () => {
-        navigate("/transfer/1")
+        navigate("/transfer/" + tuid)
         setIsClicked(true);
     };
 
@@ -229,9 +528,9 @@ const Transfer = ({ index, data }) => {
             const fetchSyncStatus = async () => {
                 try {
                     // Replace this with your real API call, e.g. fetch('/api/sync-status')
-                    // const response = await fetch('/api/sync-status');
-                    // const data = await response.json();
-                    const data = await mockBackend();
+                    const response = await fetch(WORKER + 'sync-status/' + tuid);
+                    const data = await response.json();
+                    // const data = await mockBackend();
                     setSyncData(data);
 
                     // Stop polling if finished (status 2 or 3)
@@ -486,7 +785,7 @@ const getColor = (status, current, total) => {
 const SyncProgress = ({ syncData }) => {
     const { status, currentsavedobject, totalobjectToSave } = syncData;
     const total = parseInt(totalobjectToSave);
-    const progress = Math.round((currentsavedobject / total) * 100);
+    const progress = total == 0 ? 0 : Math.round((currentsavedobject / total) * 100);
     const color = getColor(status, currentsavedobject, total);
 
     return (
