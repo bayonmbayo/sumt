@@ -62,10 +62,9 @@ const NewTransferBody = () => {
         if (f) {
             const lowerName = f.name.toLowerCase();
 
-            const isJsonMime = f.type === "application/json"
-            const hasValidExt = lowerName.endsWith(".geojson");
+            const hasValidExt = lowerName.endsWith(".json") || lowerName.endsWith(".geojson");
 
-            if (!isJsonMime || !hasValidExt) {
+            if (!hasValidExt) {
                 setFileError("Please upload a file with .json or .geojson extension.");
                 setGeoJsonFile(null);
             } else {
