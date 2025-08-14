@@ -59,16 +59,26 @@ const NewTransferBody = () => {
     const handleGeoJsonFileChange = (e) => {
         const f = e.target.files?.[0] || null;
 
-        // optional validation
-        if (f && f.type !== "application/json") {
-            setFileError("Please upload a JSON/GeoJSON file.");
-            setGeoJsonFile(null);
+        if (f) {
+            const lowerName = f.name.toLowerCase();
+
+            const isJsonMime = f.type === "application/json" || f.type === "application/geo+json";
+            const hasValidExt = lowerName.endsWith(".json") || lowerName.endsWith(".geojson");
+
+            if (!isJsonMime || !hasValidExt) {
+                setFileError("Please upload a file with .json or .geojson extension.");
+                setGeoJsonFile(null);
+            } else {
+                setFileError(null);
+                setGeoJsonFile(f);
+            }
         } else {
+            // No file selected
+            setGeoJsonFile(null);
             setFileError(null);
-            setGeoJsonFile(f);
         }
 
-        // allow selecting the same file again later
+        // Reset the input so same file can be reselected later
         e.target.value = "";
     };
 
