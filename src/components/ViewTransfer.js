@@ -40,7 +40,7 @@ const ViewTransferBody = ({ transfer }) => {
     const [bauprojektList, setBauprojektList] = useState(b);
 
     const [page, setPage] = useState(1);
-    const [dataLimit, setDataLimit] = useState(15);
+    const [dataLimit, setDataLimit] = useState(1000);
 
     const getPaginatedData = () => {
         const startIndex = page * dataLimit - dataLimit;
