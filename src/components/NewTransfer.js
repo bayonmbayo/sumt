@@ -4,6 +4,7 @@ import {
     Card,
     CardContent,
     CardHeader,
+    Chip,
     Container,
     Divider,
     FormControl,
@@ -42,7 +43,10 @@ const NewTransferBody = () => {
     const [featureIdFields, setFeatureIdFields] = useState(Array(10).fill(""));
     const [jsonFields, setJsonFields] = useState(Array(10).fill(""));
     const [geoJsonFile, setGeoJsonFile] = useState(null);
+    const [fileError, setFileError] = useState(null);
     const [loading, setLoading] = useState(false)
+
+
 
     const handleFieldChange = (setStateFn, index, value) => {
         setStateFn((prevFields) => {
@@ -52,8 +56,25 @@ const NewTransferBody = () => {
         });
     };
 
-    const handleGeoJsonFileChange = (event) => {
-        setGeoJsonFile(event.target.files[0]);
+    const handleGeoJsonFileChange = (e) => {
+        const f = e.target.files?.[0] || null;
+
+        // optional validation
+        if (f && f.type !== "application/json") {
+            setFileError("Please upload a JSON/GeoJSON file.");
+            setGeoJsonFile(null);
+        } else {
+            setFileError(null);
+            setGeoJsonFile(f);
+        }
+
+        // allow selecting the same file again later
+        e.target.value = "";
+    };
+
+    const removeGeoJsonFile = () => {
+        setGeoJsonFile(null);
+        setFileError(null);
     };
 
     const combinedJson = jsonFields
@@ -142,15 +163,34 @@ const NewTransferBody = () => {
                 );
             case "file":
                 return (
-                    <Button variant="contained" component="label">
-                        Upload GeoJSON File
-                        <input
-                            type="file"
-                            accept="application/json"
-                            hidden
-                            onChange={handleGeoJsonFileChange}
-                        />
-                    </Button>
+                    <Box display="flex" flexDirection="column" gap={1.5}>
+                        <Button variant="contained" component="label">
+                            Upload GeoJSON File
+                            <input
+                                type="file"
+                                accept="application/json"
+                                hidden
+                                onChange={handleGeoJsonFileChange}
+                            />
+                        </Button>
+
+                        {fileError && (
+                            <Typography variant="body2" color="error">{fileError}</Typography>
+                        )}
+
+                        {geoJsonFile && (
+                            <Box display="flex" alignItems="center" gap={1}>
+                                <Chip
+                                    label={`${geoJsonFile.name} — ${(geoJsonFile.size / 1024).toFixed(1)} KB`}
+                                    onDelete={removeGeoJsonFile}
+                                    variant="outlined"
+                                />
+                                <Button size="small" onClick={removeGeoJsonFile}>
+                                    Remove
+                                </Button>
+                            </Box>
+                        )}
+                    </Box>
                 );
             default:
                 return null;
