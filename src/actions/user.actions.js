@@ -54,27 +54,38 @@ function register(profil) {
     }
 }
 
-function login(credentials) {
+export function login(credentials) {
     return dispatch => {
         dispatch(request({ credentials }));
 
         userService.login(credentials)
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) {
+                    // HTTP error (like 401 Unauthorized)
+                    return res.json().then(err => {
+                        throw err; // go to catch()
+                    });
+                }
+                return res.json();
+            })
             .then(data => {
                 localStorage.setItem('user', JSON.stringify(data));
-                dispatch({ type: userConstants.LOGIN_SUCCESS, payload: data })
+                dispatch(success(data));
             })
-            .catch(res => {
-                dispatch({ type: userConstants.LOGIN_FAILURE, payload: res })
-                // dispatch(failure(getErrorMessage(res)));
-                // dispatch(error(getErrorMessage(res)));
+            .catch(error => {
+
+                Toast.fire({
+                    icon: "error",
+                    title: "Login failed... Invalid username or password"
+                });
+
+                dispatch(failure(error));
             });
     };
 
-    function request(payload) { return { type: userConstants.LOGIN_REQUEST, payload } }
-    function success(payload) { return { type: userConstants.LOGIN_SUCCESS, payload } }
-    function failure(payload) { return { type: userConstants.LOGIN_FAILURE, payload } }
-    // function error(payload) { return { type: alertConstants.ERROR, payload } }
+    function request(payload) { return { type: userConstants.LOGIN_REQUEST, payload }; }
+    function success(payload) { return { type: userConstants.LOGIN_SUCCESS, payload }; }
+    function failure(payload) { return { type: userConstants.LOGIN_FAILURE, payload }; }
 }
 
 function session() {
