@@ -7,12 +7,12 @@ export const transferActions = {
     getAllTransfers
 };
 
-function getTransfer() {
+function getTransfer(transfer) {
     console.log("in Actions in Transfer")
     return dispatch => {
         dispatch({ type: transferConstants.GET_REQUEST });
 
-        transferService.getTransfer()
+        transferService.getTransfer(transfer)
             .then(res => res.json())
             .then(data => dispatch({ type: transferConstants.GET_SUCCESS, payload: data }))
             .catch(error => dispatch({ type: transferConstants.GET_FAILURE, payload: error }));

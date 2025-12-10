@@ -6,6 +6,7 @@ import { profileService } from "../services/profile.service";
 
 export const profileActions = {
     createUser,
+    updateUser,
     getProfileList,
 }
 
@@ -46,6 +47,34 @@ function createUser(userdata) {
             })
             .catch(error => {
                 dispatch({ type: profileConstants.CREATE_PROFIL_FAILURE, payload: [error, userdata] })
+            })
+    }
+}
+
+function updateUser(userdata) {
+    return dispatch => {
+        dispatch({ type: profileConstants.UPDATE_PROFIL_REQUEST });
+
+        profileService.modifyUser(userdata)
+            .then(response => {
+                // Directly use response.status to check the HTTP status code
+                if (!response.ok) {
+                    dispatch({ type: profileConstants.UPDATE_PROFIL_FAILURE, payload: [response, userdata] })
+
+                    Toast.fire({
+                        icon: "warning",
+                        title: "Please verify if you complete correctly the profil"
+                    });
+
+                    throw new Error('Network response was not ok. Status Code: ' + response.status);
+                }
+                return response.json(); // Assuming the response is JSON. Use response.text() if it's plain text.
+            })
+            .then(data => {
+                dispatch({ type: profileConstants.UPDATE_PROFIL_SUCCESS, payload: [data, userdata] })
+            })
+            .catch(error => {
+                dispatch({ type: profileConstants.UPDATE_PROFIL_FAILURE, payload: [error, userdata] })
             })
     }
 }

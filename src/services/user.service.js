@@ -5,7 +5,9 @@ export const userService = {
     register,
     confirmation,
     login,
-    logout
+    logout,
+    requestNewPassword,
+    resetPassword
 };
 
 const WORKER = workerConstants.WORKER
@@ -22,8 +24,8 @@ function register(data) {
         });
 }
 
-function login(email, passwort) {
-    const body = JSON.stringify({ email, passwort });
+function login(credentials) {
+    const body = JSON.stringify(credentials);
 
     return fetch(WORKER + "login",
         {
@@ -42,7 +44,29 @@ function confirmation(token) {
         });
 }
 
+function requestNewPassword(email) {
+    const body = JSON.stringify({ email });
+
+    return fetch(WORKER + "newpassword",
+        {
+            method: 'POST',
+            headers: authHeaderWithJSON(),
+            body: body
+        });
+}
+
+function resetPassword(data) {
+    const body = JSON.stringify(data);
+
+    return fetch(WORKER + "resetpassword",
+        {
+            method: 'POST',
+            headers: authHeaderWithJSON(),
+            body: body
+        });
+}
+
 function logout() {
     // remove user from local storage to log user out
-    sessionStorage.removeItem('user');
+    localStorage.removeItem('user');
 }

@@ -42,12 +42,14 @@ export function user(state = {}, action) {
             return {
                 loggingIn: true,
                 user: action.payload,
+                done: false
             };
         case userConstants.LOGIN_SUCCESS:
             return {
                 loggedIn: true,
                 loggingIn: false,
                 user: action.payload,
+                done: true
             };
         case userConstants.LOGIN_SESSION:
             return {
@@ -60,6 +62,13 @@ export function user(state = {}, action) {
                 loggedIn: false,
                 loggingIn: false,
                 message: action.payload,
+                done: true
+            };
+        case userConstants.LOGOUT:
+            return {
+                loggedIn: false,
+                loggingIn: false,
+                user: "",
             };
         case userConstants.REGISTER_REQUEST:
             return {

@@ -1,19 +1,42 @@
 import { Box, Button, Container, Paper, styled, TextField, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Spinner } from '../assets/spinner';
+import { userService } from '../services';
 
 
 export const PasswortVergessen = () => {
     const [layout, setLayout] = useState(1)
+    const emailRef = useRef();
+    const [showSpinner, setShowSpinner] = useState(false)
 
     const weiter = () => {
         setLayout(2)
+    }
+
+
+    const handleSubmit = (e) => {
+        var email = emailRef.current.value
+
+        e.preventDefault();
+
+        if (email) {
+            setShowSpinner(true)
+            userService.requestNewPassword(email).then(res => {
+                setShowSpinner(false)
+                setLayout(2)
+            }).catch(res => {
+                setShowSpinner(false)
+                setLayout(2)
+            });
+        }
     }
 
     if (layout == 1) {
         return (
             <>
                 <Container maxWidth="sm">
+                    <Spinner show={showSpinner} />
                     <Paper elevation={3} sx={{ p: 4, mt: 8, borderRadius: 2 }}>
                         <Box sx={{ textAlign: 'center', mb: 3 }}>
                             {/* <img src={"/lbm.png"} alt="Logo" style={{ maxWidth: '250px', marginBottom: '20px' }} /> */}
@@ -26,6 +49,7 @@ export const PasswortVergessen = () => {
                         </Box>
                         <Box component="form" noValidate autoComplete="off">
                             <TextField
+                                inputRef={emailRef}
                                 required
                                 fullWidth
                                 label="Benutzername"
@@ -33,7 +57,7 @@ export const PasswortVergessen = () => {
                                 margin="normal"
                             />
 
-                            <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={weiter}>
+                            <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={handleSubmit}>
                                 Weiter
                             </Button>
                         </Box>

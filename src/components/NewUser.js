@@ -1,15 +1,15 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Button, Container, FormControl, FormControlLabel, FormLabel, Paper, Radio, RadioGroup, Stack, styled, TextField, Typography } from "@mui/material";
+import { Box, Button, Container, FormControl, FormControlLabel, FormGroup, FormLabel, Paper, Radio, RadioGroup, Stack, styled, Switch, TextField, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
 import Swal from 'sweetalert2';
 import { profileActions } from '../actions/profile.actions';
-import { userActions } from '../actions/user.actions';
 import { Spinner } from '../assets/spinner';
-import { userConstants } from '../constants';
+import { profileConstants } from '../constants';
 import { ProfileClass } from '../models/profile';
 import { util } from '../services';
+import { profileService } from '../services/profile.service';
 import { HomeNavigation } from "./Home";
 
 
@@ -25,33 +25,49 @@ const Toast = Swal.mixin({
     }
 });
 
-const NewUser = () => {
-    const { transfer } = useParams();
+const NewUser = ({ update }) => {
+    const { user } = useParams();
+    const [userData, setUserData] = useState("")
     const dispatch = useDispatch();
+    const [loading, setLoading] = useState(false)
 
 
     useEffect(() => {
-        dispatch(profileActions.getProfileList())
+        if (update) {
+            setLoading(true);
+            profileService.getProfile(user)
+                .then(res => res.json())
+                .then(data => {
+                    setUserData(data);
+                    setLoading(false);
+                })
+                .catch(() => {
+                    setLoading(false);
+                });
+        } else {
+            setUserData("")
+        }
     }, []);
 
     return (
         <div style={{ marginBottom: 100 }}>
             <HomeNavigation />
-            <NewUserBody />
+            <Spinner show={loading} />
+            {!loading && update ? <NewUserBody user={userData} loading={loading} update={update} /> : <NewUserBody />}
         </div>
     );
 }
 
-const NewUserBody = () => {
-    const [layout, setLayout] = useState(1)
+const NewUserBody = ({ user, loading, update }) => {
     const navigate = useNavigate();
+    const u = useSelector((state) => state.user.user)
 
     const emailRef = useRef('')
     const vornameRef = useRef('')
     const nachnameRef = useRef('')
     const passwordRef = useRef('')
     const passwordreRef = useRef('')
-    const [role, setRole] = useState('USER')
+    const [role, setRole] = useState("USER")
 
     const [errorEmail, setErrorEmail] = useState(false)
     const [errorVorname, setErrorVorname] = useState(false)
@@ -60,32 +76,73 @@ const NewUserBody = () => {
     const [errorPasswordre, setErrorPasswordre] = useState(false)
 
     const dispatch = useDispatch();
-    const d = useSelector((state) => state.user.done);
+    const d = useSelector((state) => state.profil.done);
     const [done, setDone] = useState(d)
-    const e = useSelector((state) => state.user.error);
+    const e = useSelector((state) => state.profil.error);
     const [error, setError] = useState(e);
-    const [showSpinner, setShowSpinner] = useState(false);
+    const [showSpinner, setShowSpinner] = useState(user ? loading : false);
 
-    const [registrierend, setRegistrierend] = useState(false)
+    const [saving, setSaving] = useState(false)
+
+    const [showChangePassword, setShowChangePassword] = useState(false);
+
+    const handleChange = (e) => {
+        setShowChangePassword(e.target.checked);
+    };
 
     useEffect(() => {
-        if (registrierend) {
+        if (saving) {
             if (d) {
                 if (e) {
-                    setShowSpinner(false);
-                    dispatch({ type: userConstants.REGISTER_FAILURE_DONE });
-                    Toast.fire({
-                        icon: "error",
-                        title: "The registration failed fortunately"
-                    });
+                    if (update) {
+                        setShowSpinner(false);
+                        dispatch({ type: profileConstants.UPDATE_PROFIL_FAILURE_DONE });
+                        Toast.fire({
+                            icon: "error",
+                            title: "The update failed fortunately"
+                        });
+                    } else {
+                        setShowSpinner(false);
+                        dispatch({ type: profileConstants.CREATE_PROFIL_FAILURE_DONE });
+                        Toast.fire({
+                            icon: "error",
+                            title: "The registration failed fortunately"
+                        });
+                    }
                 } else {
-                    setShowSpinner(false);
-                    dispatch({ type: userConstants.REGISTER_SUCCESS_DONE });
-                    navigate("/users")
-                    Toast.fire({
-                        icon: "success",
-                        title: "You are successfully registered"
-                    });
+                    if (update) {
+                        setShowSpinner(false);
+                        dispatch({ type: profileConstants.UPDATE_PROFIL_SUCCESS_DONE });
+
+                        if (u && u.role && (u.role.includes("ADMIN"))) {
+                            navigate("/users")
+                        } else {
+                            navigate("/transfers")
+                        }
+
+                        // process later if the admin self changes his role
+                        // localStorage.setItem('user', JSON.stringify(data));
+                        // dispatch(userActions.session())
+
+                        Toast.fire({
+                            icon: "success",
+                            title: "The user was successfully updated"
+                        });
+                    } else {
+                        setShowSpinner(false);
+                        dispatch({ type: profileConstants.CREATE_PROFIL_SUCCESS_DONE });
+
+                        if (u && u.role && (u.role.includes("ADMIN"))) {
+                            navigate("/users")
+                        } else {
+                            navigate("/transfers")
+                        }
+
+                        Toast.fire({
+                            icon: "success",
+                            title: "The user was successfully registered"
+                        });
+                    }
                 }
             }
         }
@@ -97,7 +154,7 @@ const NewUserBody = () => {
         }
     }
 
-    const registrieren = () => {
+    const save = () => {
         // Process
 
         setErrorEmail(false)
@@ -109,8 +166,12 @@ const NewUserBody = () => {
         var email = emailRef.current.value;
         var vorname = vornameRef.current.value;
         var nachname = nachnameRef.current.value;
-        var password = passwordRef.current.value;
-        var passwordre = passwordreRef.current.value;
+        var password, passwordre;
+
+        if (!update || update && showChangePassword) {
+            password = passwordRef.current.value;
+            passwordre = passwordreRef.current.value;
+        }
 
         if (!email || !util.isValidEmail(email.trim())) {
             setErrorEmail(true)
@@ -127,24 +188,36 @@ const NewUserBody = () => {
             return;
         }
 
-        if (!password || !util.isValidPassword(password.trim())) {
-            setErrorPassword(true)
-            return;
-        }
+        if (!update || update && showChangePassword) {
+            if (!password || !util.isValidPassword(password.trim())) {
+                setErrorPassword(true)
+                return;
+            }
 
-        if (!passwordre || !(passwordre.trim() === password.trim())) {
-            setErrorPasswordre(true)
-            return;
+            if (!passwordre || !(passwordre.trim() === password.trim())) {
+                setErrorPasswordre(true)
+                return;
+            }
         }
 
         var profil = new ProfileClass()
+        if (update) {
+            profil.uuid = user.uuid
+        }
         profil.role = role
         profil.email = email
         profil.username = email
         profil.firstname = vorname
         profil.name = nachname
-        profil.password = password
-        profil.passwordre = passwordre
+
+        if (!update || update && showChangePassword) {
+            profil.changepassword = true
+            profil.password = password
+            profil.passwordre = passwordre
+        } else {
+            profil.password = ""
+            profil.passwordre = ""
+        }
 
         const replacer = (key, value) => {
             if (typeof value === 'undefined')
@@ -157,49 +230,74 @@ const NewUserBody = () => {
         // console.log(profilInfos);
 
         setShowSpinner(true);
-        setRegistrierend(true)
-        dispatch(userActions.register(profilInfos));
+        setSaving(true)
+
+        if (update) {
+            dispatch(profileActions.updateUser(profilInfos));
+        } else {
+            dispatch(profileActions.createUser(profilInfos));
+        }
+
     }
+
+    if (!update) {
+        if (u && u.role && (u.role.includes("MANAGER") || u.role.includes("USER"))) {
+            return (
+                <Container>
+                    <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
+                        {"New User"}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary" style={{ paddingTop: 10, paddingBottom: 30 }}>
+                        Diese Funktion ist nicht verfügbar.
+                    </Typography>
+                </Container>
+            );
+        }
+    }
+
 
     return (
         <>
             <Container>
                 <Spinner show={showSpinner} />
                 <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
-                    New User
+                    {update ? "Update User" : "New User"}
                 </Typography>
 
                 <Typography variant="body2" color="text.secondary" style={{ paddingTop: 10, paddingBottom: 30 }}>
-                    Bitte geben Sie die Angaben des Nutzers ein, um zu registrieren
+                    {update ? "Hier können Sie die Angaben des Nutzers bearbeiten" :
+                        "Bitte geben Sie die Angaben des Nutzers ein, um zu registrieren"}
                 </Typography>
 
                 <Box component="form" noValidate autoComplete="off">
-                    <FormControl>
-                        <FormLabel id="profil-allow-message">
+                    {(u && u.role && u.role.includes("ADMIN")) && (user && user.uuid && (u.uuid !== user.uuid)) ? <FormControl>
+                        <FormLabel id="profilRole">
                             <span style={{ marginRight: 10 }}>Role</span>
                         </FormLabel>
                         <RadioGroup
                             row
-                            aria-labelledby="profil-allow-message"
-                            name="message"
+                            aria-labelledby="profilRole"
+                            name="role"
                             onChange={handleChangeForRole}
-                            defaultValue={"USER"}
+                            defaultValue={user && user.role ? user.role : "USER"}
                         >
                             <FormControlLabel value={"ADMIN"} control={<Radio />} label="Admin" />
                             <FormControlLabel value={"MANAGER"} control={<Radio />} label="Manager" />
                             <FormControlLabel value={"USER"} control={<Radio />} label="User" />
                         </RadioGroup>
-                    </FormControl>
+                    </FormControl> : null}
 
                     <TextField
                         error={errorEmail}
                         required
                         fullWidth
-                        label="Email / Benutzername"
+                        // label="Email / Benutzername"
                         placeholder="Geben Sie die Email-Adresse ein"
                         margin="normal"
                         inputRef={emailRef}
                         helperText={errorEmail ? "Die Email-Adresse ist nicht gültig" : ""}
+                        defaultValue={user && user.email ? user.email : ""}
                     />
                     <Box
                         component="form"
@@ -216,45 +314,74 @@ const NewUserBody = () => {
                             error={errorVorname}
                             required
                             fullWidth
-                            label="Vorname"
+                            // label="Vorname"
                             placeholder="Geben Sie den Vorname ein"
                             inputRef={vornameRef}
                             helperText={errorVorname ? "Der Vorname muss min. 2 Buchstaben enthalten" : ""}
+                            defaultValue={user && user.firstname ? user.firstname : ""}
                         />
                         <TextField
                             error={errorNachname}
                             required
                             fullWidth
-                            label="Name"
+                            // label="Name"
                             placeholder="Geben Sie den Nachmame ein"
                             inputRef={nachnameRef}
                             helperText={errorNachname ? "Der Nachname muss min. 2 Buchstaben enthalten" : ""}
+                            defaultValue={user && user.name ? user.name : ""}
                         />
                     </Box>
-                    <TextField
-                        error={errorPassword}
-                        required
-                        fullWidth
-                        label="Passwort"
-                        type="password"
-                        placeholder="Geben Sie das Passwort ein"
-                        margin="normal"
-                        inputRef={passwordRef}
-                        helperText={errorPassword ? "Das Passwort ist nicht gültig" : ""}
-                    />
-                    <TextField
-                        error={errorPasswordre}
-                        required
-                        fullWidth
-                        label="Re-Passwort"
-                        type="password"
-                        placeholder="Geben Sie wieder das Passwort ein"
-                        margin="normal"
-                        inputRef={passwordreRef}
-                        helperText={errorPasswordre ? "Das Passwort ist nicht gültig" : ""}
-                    />
-                    <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={registrieren}>
-                        Registrieren
+
+                    {update ?
+                        <>
+                            <Box
+                                style={{ marginTop: 20 }}
+                            >
+                                <FormGroup aria-label="position" row>
+                                    <FormControlLabel
+                                        label="Change Password"
+                                        control={<Switch
+                                            checked={showChangePassword}
+                                            onChange={handleChange}
+                                            labelPlacement="end"
+                                            color="primary"
+                                        />}
+                                    />
+                                </FormGroup>
+                            </Box>
+                        </>
+                        : null}
+
+                    {!update || update && showChangePassword ?
+                        <>
+                            <TextField
+                                error={errorPassword}
+                                required
+                                fullWidth
+                                // label="Passwort"
+                                type="password"
+                                placeholder="Geben Sie das Passwort ein"
+                                margin="normal"
+                                inputRef={passwordRef}
+                                helperText={errorPassword ? "Das Passwort ist nicht gültig" : ""}
+                                defaultValue={""}
+                            />
+                            <TextField
+                                error={errorPasswordre}
+                                required
+                                fullWidth
+                                // label="Re-Passwort"
+                                type="password"
+                                placeholder="Geben Sie wieder das Passwort ein"
+                                margin="normal"
+                                inputRef={passwordreRef}
+                                helperText={errorPasswordre ? "Das Passwort ist nicht gültig" : ""}
+                                defaultValue={""}
+                            />
+                        </>
+                        : null}
+                    <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={save}>
+                        {update ? "Bearbeiten" : "Registrieren"}
                     </Button>
                 </Box>
             </Container>

@@ -54,33 +54,44 @@ function register(profil) {
     }
 }
 
-function login(username, password) {
+export function login(credentials) {
     return dispatch => {
-        dispatch(request({ username }));
+        dispatch(request({ credentials }));
 
-        userService.login(username, password)
-            .then(res => res.json())
-            .then(data => {
-                sessionStorage.setItem('user', JSON.stringify(data));
-                dispatch({ type: userConstants.LOGIN_SUCCESS, payload: data })
+        userService.login(credentials)
+            .then(res => {
+                if (!res.ok) {
+                    // HTTP error (like 401 Unauthorized)
+                    return res.json().then(err => {
+                        throw err; // go to catch()
+                    });
+                }
+                return res.json();
             })
-            .catch(res => {
-                dispatch({ type: userConstants.LOGIN_FAILURE, payload: res })
-                // dispatch(failure(getErrorMessage(res)));
-                // dispatch(error(getErrorMessage(res)));
+            .then(data => {
+                localStorage.setItem('user', JSON.stringify(data));
+                dispatch(success(data));
+            })
+            .catch(error => {
+
+                Toast.fire({
+                    icon: "error",
+                    title: "Login failed... Invalid username or password"
+                });
+
+                dispatch(failure(error));
             });
     };
 
-    function request(payload) { return { type: userConstants.LOGIN_REQUEST, payload } }
-    function success(payload) { return { type: userConstants.LOGIN_SUCCESS, payload } }
-    function failure(payload) { return { type: userConstants.LOGIN_FAILURE, payload } }
-    // function error(payload) { return { type: alertConstants.ERROR, payload } }
+    function request(payload) { return { type: userConstants.LOGIN_REQUEST, payload }; }
+    function success(payload) { return { type: userConstants.LOGIN_SUCCESS, payload }; }
+    function failure(payload) { return { type: userConstants.LOGIN_FAILURE, payload }; }
 }
 
 function session() {
     return dispatch => {
         dispatch(request({ "username": "" }));
-        dispatch(success(JSON.parse(sessionStorage.getItem('user'))))
+        dispatch(success(JSON.parse(localStorage.getItem('user'))))
     };
     function request(payload) { return { type: userConstants.LOGIN_REQUEST, payload } }
     function success(payload) { return { type: userConstants.LOGIN_SESSION, payload } }

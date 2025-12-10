@@ -1,17 +1,24 @@
 import { Box, Button, Container, Paper, Stack, styled, TextField, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { userActions } from '../actions/user.actions';
 import { Spinner } from '../assets/spinner';
+import { CredentialClass } from '../models/profile';
 
 
 const Login = () => {
     const navigate = useNavigate()
     const dispatch = useDispatch()
     const [showSpinner, setShowSpinner] = useState(false)
+    const [enter, setEnter] = useState(false)
+
+    const benutzernameRef = useRef()
+    const passwordRef = useRef()
 
     const loggingIn = useSelector((state) => state.user.loggingIn);
+    const loggedIn = useSelector((state) => state.user.loggedIn);
+    const d = useSelector((state) => state.user.done);
 
     useEffect(() => {
         setShowSpinner(loggingIn);
@@ -21,22 +28,47 @@ const Login = () => {
         navigate("/transfers")
     }
 
+    useEffect(() => {
+        if (enter) {
+            if (d) {
+                if (loggedIn) {
+                    setShowSpinner(false);
+                    navigate("/transfers")
+                }
+            }
+        }
+    }, [d])
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        var username, password;
+        var username = benutzernameRef.current.value
+        var password = passwordRef.current.value
 
         if (username && password) {
+            var cred = new CredentialClass()
+            cred.email = username
+            cred.password = password
+
+            const replacer = (key, value) => {
+                if (typeof value === 'undefined')
+                    return false
+                else return value;
+            }
+
+            var credInfos = JSON.parse(JSON.stringify(cred, replacer));
+
             setShowSpinner(true);
-            dispatch(userActions.login(username, password));
+            setEnter(true)
+            dispatch(userActions.login(credInfos));
         }
     };
 
     return (
         <>
             <Container maxWidth="sm">
-                <Spinner show={loggingIn} />
+                <Spinner show={showSpinner} />
                 <Paper elevation={3} sx={{ p: 4, mt: 8, borderRadius: 2 }}>
                     <Box sx={{ textAlign: 'center', mb: 3 }}>
                         {/* <img src={"/lbm.png"} alt="Logo" style={{ maxWidth: '250px', marginBottom: '20px' }} /> */}
@@ -49,6 +81,7 @@ const Login = () => {
                     </Box>
                     <Box component="form" noValidate autoComplete="off">
                         <TextField
+                            inputRef={benutzernameRef}
                             required
                             fullWidth
                             label="Benutzername"
@@ -56,14 +89,20 @@ const Login = () => {
                             margin="normal"
                         />
                         <TextField
+                            inputRef={passwordRef}
                             required
                             fullWidth
                             label="Passwort"
                             type="password"
                             placeholder="Passwort"
                             margin="normal"
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    handleSubmit(e);
+                                }
+                            }}
                         />
-                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={goToHome}>
+                        <Button variant="contained" fullWidth sx={{ mt: 2 }} onClick={handleSubmit}>
                             Anmelden
                         </Button>
                     </Box>
