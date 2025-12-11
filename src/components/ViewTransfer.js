@@ -1,4 +1,4 @@
-import { Button, Container, Grid, Paper, Stack, styled, Typography } from "@mui/material";
+import { Button, Container, Grid, IconButton, Paper, Stack, styled, Tooltip, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -9,7 +9,9 @@ import { HomeNavigation } from "./Home";
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import CheckCircleSharpIcon from '@mui/icons-material/CheckCircleSharp';
 import ChildCareIcon from '@mui/icons-material/ChildCare';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ErrorSharpIcon from '@mui/icons-material/ErrorSharp';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import ReactJson from "react-json-view";
 
@@ -116,9 +118,31 @@ const ViewTransferBody = ({ transfer }) => {
 // Parent Component - Shows only KSP, larger width
 const ParentBauprojekt = ({ data, index }) => {
     const [isClicked, setIsClicked] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const handleClick = () => {
         setIsClicked(!isClicked);
+    };
+
+    const getElementLink = () => {
+        // Generate link based on data
+        const interventionUrl = data.url
+        return interventionUrl;
+    };
+
+    const handleCopyLink = (e) => {
+        e.stopPropagation();
+        const link = getElementLink();
+        navigator.clipboard.writeText(link).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
+
+    const handleOpenInNewTab = (e) => {
+        e.stopPropagation();
+        const link = getElementLink();
+        window.open(link, '_blank');
     };
 
     return (
@@ -131,13 +155,15 @@ const ParentBauprojekt = ({ data, index }) => {
                     backgroundColor: '#1976d2',
                     borderRadius: 20,
                     justifyContent: 'flex-start',
-                    marginBottom: 10
+                    marginBottom: 10,
+                    paddingRight: 10
                 }}>
                 <Stack
                     direction="row"
                     justifyContent="flex-start"
                     alignItems="center"
                     spacing={2}
+                    style={{ width: '100%' }}
                 >
                     <Item>
                         <AccountTreeIcon style={{ fontSize: 28 }} />
@@ -150,7 +176,7 @@ const ParentBauprojekt = ({ data, index }) => {
                             }
                         </Typography>
                     </Item>
-                    <Item style={{ marginLeft: 'auto' }}>
+                    <Item>
                         <Typography variant="body1" color="#fff" style={{
                             backgroundColor: 'rgba(255,255,255,0.2)',
                             padding: '4px 12px',
@@ -158,6 +184,32 @@ const ParentBauprojekt = ({ data, index }) => {
                         }}>
                             INTERVENTION
                         </Typography>
+                    </Item>
+                    <Item style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                        <Tooltip title={copied ? "Link copied!" : "Copy link"}>
+                            <IconButton
+                                onClick={handleCopyLink}
+                                size="small"
+                                style={{
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    color: '#fff'
+                                }}
+                            >
+                                <ContentCopyIcon style={{ fontSize: 18 }} />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Open in new tab">
+                            <IconButton
+                                onClick={handleOpenInNewTab}
+                                size="small"
+                                style={{
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    color: '#fff'
+                                }}
+                            >
+                                <OpenInNewIcon style={{ fontSize: 18 }} />
+                            </IconButton>
+                        </Tooltip>
                     </Item>
                 </Stack>
             </Button>
@@ -191,9 +243,31 @@ const ParentBauprojekt = ({ data, index }) => {
 // Child Component - Shows both flistra and KSP, smaller width
 const ChildBauprojekt = ({ data, index }) => {
     const [isClicked, setIsClicked] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const handleClick = () => {
         setIsClicked(!isClicked);
+    };
+
+    const getElementLink = () => {
+        // Generate link based on data id or current URL with hash
+        const compensationUrl = data.url
+        return compensationUrl;
+    };
+
+    const handleCopyLink = (e) => {
+        e.stopPropagation();
+        const link = getElementLink();
+        navigator.clipboard.writeText(link).then(() => {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        });
+    };
+
+    const handleOpenInNewTab = (e) => {
+        e.stopPropagation();
+        const link = getElementLink();
+        window.open(link, '_blank');
     };
 
     return (
@@ -206,13 +280,15 @@ const ChildBauprojekt = ({ data, index }) => {
                     backgroundColor: '#1976d2',
                     borderRadius: 15,
                     justifyContent: 'flex-start',
-                    marginBottom: 10
+                    marginBottom: 10,
+                    paddingRight: 10
                 }}>
                 <Stack
                     direction="row"
                     justifyContent="flex-start"
                     alignItems="center"
                     spacing={1}
+                    style={{ width: '100%' }}
                 >
                     <Item>
                         <ChildCareIcon style={{ fontSize: 20 }} />
@@ -226,7 +302,7 @@ const ChildBauprojekt = ({ data, index }) => {
                             }
                         </Typography>
                     </Item>
-                    <Item style={{ marginLeft: 'auto' }}>
+                    <Item>
                         <Typography variant="body1" color="#fff" style={{
                             backgroundColor: 'rgba(255,255,255,0.2)',
                             padding: '4px 12px',
@@ -234,6 +310,32 @@ const ChildBauprojekt = ({ data, index }) => {
                         }}>
                             KOMPENSATION
                         </Typography>
+                    </Item>
+                    <Item style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                        <Tooltip title={copied ? "Link copied!" : "Copy link"}>
+                            <IconButton
+                                onClick={handleCopyLink}
+                                size="small"
+                                style={{
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    color: '#fff'
+                                }}
+                            >
+                                <ContentCopyIcon style={{ fontSize: 16 }} />
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Open in new tab">
+                            <IconButton
+                                onClick={handleOpenInNewTab}
+                                size="small"
+                                style={{
+                                    backgroundColor: 'rgba(255,255,255,0.2)',
+                                    color: '#fff'
+                                }}
+                            >
+                                <OpenInNewIcon style={{ fontSize: 16 }} />
+                            </IconButton>
+                        </Tooltip>
                     </Item>
                 </Stack>
             </Button>
