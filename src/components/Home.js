@@ -374,14 +374,54 @@ const Transfers = ({ searchTerm }) => {
         setPage(1);
     }, [t, searchTerm]);
 
+    // Header component with refresh button - reused in both states
+    const TransfersHeader = () => (
+        <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+            style={{ paddingTop: 30 }}
+        >
+            <Item>
+                <Typography variant="h5" fontWeight="bold" color="text.secondary">
+                    Transfers {!l && searchTerm && `(${getFilteredData().length} results)`}
+                </Typography>
+            </Item>
+            <Item>
+                <Button
+                    variant="outlined"
+                    onClick={handleRefresh}
+                    disabled={l}
+                    style={{
+                        borderRadius: 20,
+                        minWidth: 0,
+                        padding: '10px 15px',
+                        borderColor: '#1976d2',
+                        color: '#1976d2'
+                    }}
+                >
+                    {l ? (
+                        <>
+                            <CircularProgress size={16} style={{ marginRight: 8, color: '#1976d2' }} />
+                            Refreshing...
+                        </>
+                    ) : (
+                        <>
+                            <RefreshIcon style={{ marginRight: 8 }} />
+                            Refresh
+                        </>
+                    )}
+                </Button>
+            </Item>
+        </Stack>
+    );
+
     if (l) {
         return (
             <>
                 <Container>
+                    <TransfersHeader />
                     <Spinner show={l} />
-                    <Typography variant="h5" fontWeight="bold" color="text.secondary" style={{ paddingTop: 30 }}>
-                        Transfers
-                    </Typography>
                 </Container>
             </>
         )
@@ -389,44 +429,7 @@ const Transfers = ({ searchTerm }) => {
         if (t && t.transfers) {
             return (
                 <Container>
-                    <Stack
-                        direction="row"
-                        justifyContent="space-between"
-                        alignItems="center"
-                        style={{ paddingTop: 30 }}
-                    >
-                        <Item>
-                            <Typography variant="h5" fontWeight="bold" color="text.secondary">
-                                Transfers {searchTerm && `(${getFilteredData().length} results)`}
-                            </Typography>
-                        </Item>
-                        <Item>
-                            <Button
-                                variant="outlined"
-                                onClick={handleRefresh}
-                                disabled={l}
-                                style={{
-                                    borderRadius: 20,
-                                    minWidth: 0,
-                                    padding: '10px 15px',
-                                    borderColor: '#1976d2',
-                                    color: '#1976d2'
-                                }}
-                            >
-                                {l ? (
-                                    <>
-                                        <CircularProgress size={16} style={{ marginRight: 8, color: '#1976d2' }} />
-                                        Refreshing...
-                                    </>
-                                ) : (
-                                    <>
-                                        <RefreshIcon style={{ marginRight: 8 }} />
-                                        Refresh
-                                    </>
-                                )}
-                            </Button>
-                        </Item>
-                    </Stack>
+                    <TransfersHeader />
 
                     <Grid
                         container
