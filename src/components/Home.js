@@ -1,18 +1,22 @@
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import SearchIcon from '@mui/icons-material/Search';
 import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
 import SubjectIcon from '@mui/icons-material/Subject';
 import SyncIcon from '@mui/icons-material/Sync';
-import SyncProblemIcon from '@mui/icons-material/SyncProblem';
-import { Box, Button, CircularProgress, ClickAwayListener, Container, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Grow, IconButton, MenuItem, MenuList, Paper, Popper, Stack, styled, TextField, Typography } from "@mui/material";
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import {
+    Box, Button, Card, CardActionArea, CardContent, Chip, CircularProgress, ClickAwayListener, Container, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Grow, IconButton, MenuItem, MenuList, Paper, Popper, Stack, styled, TextField, Tooltip, Typography, useMediaQuery,
+    useTheme
+} from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
 import { useEffect, useRef, useState } from 'react';
-import { useWindowDimensions } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { transferActions } from '../actions/transfer.actions';
@@ -118,7 +122,6 @@ export const HomeNavigation = ({ onSearchChange, searchTerm }) => {
                 const result = await response.json();
                 console.log('Auto-sync simulation started:', result);
                 handleCloseModal();
-                // Optionally refresh the transfers list or show success message
             } else {
                 throw new Error('Failed to start simulation');
             }
@@ -341,7 +344,7 @@ const Transfers = ({ searchTerm }) => {
                     (transfer.title && transfer.title.toLowerCase().includes(lowerSearchTerm)) ||
                     (transfer.tuid && transfer.tuid.toLowerCase().includes(lowerSearchTerm)) ||
                     (transfer.auto !== undefined && (transfer.auto ? 'auto' : 'manuell').includes(lowerSearchTerm)) ||
-                    (transfer.status && transfer.status.toString().includes(lowerSearchTerm))
+                    (transfer.constructionProjectName && transfer.constructionProjectName.toLowerCase().includes(lowerSearchTerm))
                 );
             });
         }
@@ -434,7 +437,6 @@ const Transfers = ({ searchTerm }) => {
                     <Grid
                         container
                         spacing={4}
-                        // className="marginLaptop"
                         justifyItems="center"
                         style={{ marginTop: 30 }}
                     >
@@ -471,191 +473,275 @@ const Transfers = ({ searchTerm }) => {
     }
 }
 
+/**
+ * Transfer Component
+ * 
+ * Status values:
+ *   status = 1: Transfer is processing
+ *   status = 2: Transfer is finished
+ * 
+ * Success values:
+ *   success = 0: Transfer is running
+ *   success = 1: Transfer finished and FAILED
+ *   success = 2: Transfer finished and SUCCEEDED
+ * 
+ * hasErrors: boolean - indicates if any elements in the transfer have errors
+ */
 const Transfer = ({ index, data }) => {
-    const { id, tuid, title, auto, status, executedat, bauprojekte, allbauprojekte } = data
-    const [isHovered, setIsHovered] = useState(false);
+    const {
+        tuid,
+        title,
+        auto,
+        status,
+        success,
+        hasErrors,
+        executedat,
+        bauprojekte,
+        allbauprojekte,
+        constructionProjectName,
+    } = data;
+
+    const navigate = useNavigate();
+    const theme = useTheme();
+    const showMenu = useMediaQuery("(min-width:480px)");
+
     const [isClicked, setIsClicked] = useState(false);
-    const navigate = useNavigate()
-
-    const { height, width } = useWindowDimensions();
-
-    console.log(width)
-
-    const [syncData, setSyncData] = useState({
-        status: status,
+    const [syncData, setSyncData] = useState(() => ({
+        status,
+        success,
+        hasErrors,
         currentsavedobject: bauprojekte,
-        totalobjectToSave: allbauprojekte
-    });
+        totalobjectToSave: allbauprojekte,
+    }));
 
-    const handleClick = () => {
-        navigate("/transfer/" + tuid)
+    // Keep syncData aligned if parent data changes
+    useEffect(() => {
+        setSyncData({
+            status,
+            success,
+            hasErrors,
+            currentsavedobject: bauprojekte,
+            totalobjectToSave: allbauprojekte,
+        });
+    }, [status, success, hasErrors, bauprojekte, allbauprojekte]);
+
+    const handleOpen = () => {
         setIsClicked(true);
+        navigate(`/transfer/${tuid}`);
     };
 
     const runAgain = (e) => {
         e.stopPropagation();
+        // TODO: trigger your "run again" endpoint
+        console.log("Run Again", tuid);
+    };
 
-        console.log("Run Again")
-    }
-
+    // Short click feedback
     useEffect(() => {
-        let timer;
-        if (isClicked) {
-            timer = setTimeout(() => setIsClicked(false), 200);
-        }
-        return () => clearTimeout(timer);
+        if (!isClicked) return;
+        const t = setTimeout(() => setIsClicked(false), 200);
+        return () => clearTimeout(t);
     }, [isClicked]);
 
-    const mockBackend = (() => {
-        let saved = bauprojekte;
-        return () => {
-            saved += 5;
-            if (saved >= allbauprojekte) {
-                return Promise.resolve({
-                    status: 2,
-                    currentsavedobject: allbauprojekte,
-                    totalobjectToSave: allbauprojekte
-                });
-            } else {
-                return Promise.resolve({
-                    status: 1,
-                    currentsavedobject: saved,
-                    totalobjectToSave: allbauprojekte
-                });
+    // Poll sync status while transfer is running (success === 0)
+    useEffect(() => {
+        // Only poll if transfer is running
+        if (success !== 0) return;
+
+        let intervalId;
+
+        const fetchSyncStatus = async () => {
+            try {
+                const res = await fetch(`${WORKER}sync-status/${tuid}`);
+                const next = await res.json();
+                setSyncData(next);
+
+                // Stop polling when transfer is finished (success === 1 or success === 2)
+                if (next.success === 1 || next.success === 2) {
+                    if (intervalId) clearInterval(intervalId);
+                }
+            } catch (err) {
+                console.error("Error fetching sync status:", err);
             }
         };
-    })();
 
-    useEffect(() => {
-        if (status === 1) {
-            const fetchSyncStatus = async () => {
-                try {
-                    // Replace this with your real API call, e.g. fetch('/api/sync-status')
-                    const response = await fetch(WORKER + 'sync-status/' + tuid);
-                    const data = await response.json();
-                    // const data = await mockBackend();
-                    setSyncData(data);
+        // Run immediately + poll
+        fetchSyncStatus();
+        intervalId = setInterval(fetchSyncStatus, 500);
 
-                    // Stop polling if finished (status 2 or 3)
-                    if (data.status === 2 || (data.status === 3 && data.currentsavedobject >= data.totalobjectToSave)) {
-                        clearInterval(intervalId);
-                    }
-                } catch (err) {
-                    console.error('Error fetching sync status:', err);
-                }
-            };
+        return () => clearInterval(intervalId);
+    }, [success, tuid]);
 
-            const intervalId = setInterval(fetchSyncStatus, 500);
-            return () => clearInterval(intervalId); // Cleanup on unmount
-        }
-    }, []);
-
+    // Determine border color based on state
+    const getBorderColor = () => {
+        if (syncData.success === 1) return '#f44336'; // Failed - red
+        if (syncData.hasErrors) return '#ff9800'; // Has errors - orange
+        return 'divider'; // Default
+    };
 
     return (
-        <div
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            onClick={() => handleClick()}
-            style={{
-                width: '100%',
-                height: 200,
-                backgroundColor: isClicked ? '#F3F4F9' : '#fff',
-                transition: 'background-color 0.3s ease',
-                borderRadius: 20,
-                border: '2px solid',
-                boxShadow: isHovered ? '10px 5px 5px #1976d2' : 'none',
-                cursor: isHovered ? 'pointer' : 'auto'
-            }}>
-            <Stack
-                direction="column"
-                justifyContent="flex-start"
-                alignItems="space-between"
-                spacing={1}
-            >
-                <Item>
+        <Card
+            elevation={0}
+            sx={{
+                borderRadius: 3,
+                border: "2px solid",
+                borderColor: getBorderColor(),
+                bgcolor: isClicked ? "grey.50" : "background.paper",
+                transition: "box-shadow .2s ease, transform .2s ease, background-color .2s ease",
+                "&:hover": {
+                    boxShadow: 4,
+                    transform: "translateY(-1px)",
+                },
+            }}
+        >
+            <CardActionArea onClick={handleOpen} sx={{ borderRadius: 3 }}>
+                <CardContent sx={{ p: 2 }}>
+                    {/* Header row */}
                     <Stack
-                        direction="row"
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={1.5}
+                        alignItems={{ xs: "stretch", sm: "center" }}
                         justifyContent="space-between"
-                        alignItems="center"
-                        spacing={1}
                     >
-                        <Item>
+                        {/* Title + mode + error indicator */}
+                        <Box sx={{ minWidth: 0 }}>
                             <Stack
                                 direction="row"
-                                justifyContent="start"
-                                alignItems="center"
                                 spacing={1}
+                                alignItems="center"
+                                sx={{ flexWrap: "wrap" }}
                             >
-                                <Item>
-                                    <Typography variant="h5" fontWeight="bold" color="text.secondary" padding={1}>
-                                        {title}
-                                    </Typography>
-                                </Item>
-                                <Item>
-                                    <Typography variant="h5" color="text.secondary" padding={1}>
-                                        {auto ? "Auto" : "Manuell"}
-                                    </Typography>
-                                </Item>
-                            </Stack>
+                                <Typography
+                                    variant="h6"
+                                    fontWeight={800}
+                                    color="text.secondary"
+                                    sx={{
+                                        minWidth: 0,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                        maxWidth: { xs: "100%", sm: 400 },
+                                    }}
+                                >
+                                    {title}
+                                </Typography>
 
-                        </Item>
-                        <Item style={{ marginRight: 20 }}>
-                            <Button size="small" variant="contained" style={{ borderRadius: 20, minWidth: 0, padding: 5, marginRight: 5 }} onClick={(e) => runAgain(e)}><SyncIcon /> Nochmal</Button>
-                        </Item>
+                                <Chip
+                                    label={auto ? "Auto" : "Manuell"}
+                                    size="small"
+                                    variant="outlined"
+                                    sx={{ fontWeight: 600 }}
+                                />
+
+                                {/* Error Indicators */}
+                                {syncData.success === 1 && (
+                                    <Tooltip title="Transfer failed">
+                                        <Chip
+                                            icon={<ErrorIcon />}
+                                            label="Failed"
+                                            size="small"
+                                            color="error"
+                                            sx={{ fontWeight: 600 }}
+                                        />
+                                    </Tooltip>
+                                )}
+
+                                {syncData.success === 2 && syncData.hasErrors && (
+                                    <Tooltip title="Transfer completed with errors in some elements">
+                                        <Chip
+                                            icon={<WarningAmberIcon />}
+                                            label="Has Errors"
+                                            size="small"
+                                            color="warning"
+                                            sx={{ fontWeight: 600 }}
+                                        />
+                                    </Tooltip>
+                                )}
+
+                                {syncData.success === 0 && syncData.hasErrors && (
+                                    <Tooltip title="Errors encountered during transfer">
+                                        <Chip
+                                            icon={<WarningAmberIcon />}
+                                            label="Errors"
+                                            size="small"
+                                            color="warning"
+                                            variant="outlined"
+                                            sx={{
+                                                fontWeight: 600,
+                                                animation: 'pulse 2s infinite',
+                                                '@keyframes pulse': {
+                                                    '0%': { opacity: 1 },
+                                                    '50%': { opacity: 0.6 },
+                                                    '100%': { opacity: 1 },
+                                                },
+                                            }}
+                                        />
+                                    </Tooltip>
+                                )}
+                            </Stack>
+                        </Box>
+
+                        {/* Actions */}
+                        <Stack
+                            direction="row"
+                            spacing={1}
+                            justifyContent={{ xs: "flex-start", sm: "flex-end" }}
+                        >
+                            <Button
+                                size="small"
+                                variant="contained"
+                                onClick={runAgain}
+                                startIcon={<SyncIcon />}
+                                sx={{ borderRadius: 999, px: 1.5 }}
+                            >
+                                Nochmal
+                            </Button>
+
+                            {showMenu ? <MenuListComposition /> : null}
+                        </Stack>
                     </Stack>
-                </Item>
-                <Item>
+
+                    {/* Construction project */}
+                    {constructionProjectName ? (
+                        <Box sx={{ mt: 1 }}>
+                            <Chip
+                                icon={<AccountTreeIcon />}
+                                label={constructionProjectName}
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                sx={{
+                                    maxWidth: { xs: 220, sm: 420 },
+                                    "& .MuiChip-label": {
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                    },
+                                }}
+                            />
+                        </Box>
+                    ) : null}
+
+                    {/* Footer row */}
                     <Stack
-                        direction="row"
+                        direction={{ xs: "column", sm: "row" }}
+                        spacing={1.5}
+                        alignItems={{ xs: "flex-start", sm: "center" }}
                         justifyContent="space-between"
-                        alignItems="center"
-                        spacing={1}
+                        sx={{ mt: 2 }}
                     >
-                        <Item>
-                            <Stack
-                                direction="row"
-                                justifyContent="flex-start"
-                                alignItems="center"
-                                spacing={1}
-                            >
-                                {/* <Item>
-                                    <Button
-                                        size="small"
-                                        variant="contained"
-                                        style={{ borderRadius: 10, minWidth: 50, padding: 5, marginRight: 5 }}
-                                    >{bauprojekte}/{allbauprojekte}</Button>
-                                </Item> */}
-                                <Item>
-                                    {/* <Status status={status} current={bauprojekte} total={allbauprojekte} /> */}
-                                    <SyncProgress syncData={syncData} />
-                                </Item>
-                                <Item>
-                                    <Typography variant="h5" color="text.secondary" padding={2}>
-                                        {util.convertToGermanyTime(executedat)}
-                                    </Typography>
-                                </Item>
-                            </Stack>
-
-                        </Item>
-                        {width >= 480 ? <Item>
-                            <Stack
-                                direction="row"
-                                justifyContent="flex-start"
-                                alignItems="center"
-                                spacing={1}
-                            >
-                                <Item>
-                                    <MenuListComposition />
-                                </Item>
-                            </Stack>
-                        </Item> : null}
+                        <Stack direction="row" spacing={1.5} alignItems="center">
+                            <SyncProgress syncData={syncData} />
+                            <Typography variant="body1" color="text.secondary">
+                                {util.convertToGermanyTime(executedat)}
+                            </Typography>
+                        </Stack>
                     </Stack>
-                </Item>
-            </Stack>
-
-        </div>
+                </CardContent>
+            </CardActionArea>
+        </Card>
     );
-}
+};
 
 const MenuListComposition = () => {
     const [open, setOpen] = useState(false);
@@ -716,11 +802,10 @@ const MenuListComposition = () => {
                 <Popper
                     open={open}
                     anchorEl={anchorRef.current}
-                    role={undefined}
-                    placement="bottom-start"
+                    placement="bottom-end"
                     transition
-                    disablePortal
-                    style={{ zIndex: 10000000000 }}
+                    disablePortal={false}
+                    sx={{ zIndex: (theme) => theme.zIndex.modal + 1 }}
                 >
                     {({ TransitionProps, placement }) => (
                         <Grow
@@ -752,44 +837,135 @@ const MenuListComposition = () => {
     );
 }
 
-const Status = ({ status, current, total }) => {
-    if (status === 2)
+/**
+ * Status Icon Component
+ * 
+ * Shows different icons based on success state:
+ *   success = 0: Running (blue sync icon, spinning)
+ *   success = 1: Failed (red error icon)
+ *   success = 2: Succeeded (green check icon) - with warning if hasErrors
+ */
+const Status = ({ success, hasErrors }) => {
+    // success = 2: Finished and SUCCEEDED
+    if (success === 2) {
+        // Show warning icon if there are errors in elements
+        if (hasErrors) {
+            return (
+                <Tooltip title="Completed with errors">
+                    <IconButton
+                        style={{
+                            backgroundColor: '#fff3e0',
+                            color: '#ff9800'
+                        }}
+                        size="small"
+                    >
+                        <WarningAmberIcon />
+                    </IconButton>
+                </Tooltip>
+            );
+        }
         return (
-            <IconButton style={{ backgroundColor: '#1976d2', color: '#00ff00' }}>
-                <PublishedWithChangesIcon color='#0000ff' />
+            <IconButton
+                style={{
+                    backgroundColor: '#e8f5e9',
+                    color: '#4caf50'
+                }}
+                size="small"
+            >
+                <CheckCircleIcon />
             </IconButton>
         );
-    if (status === 3 && current === 0)
+    }
+
+    // success = 1: Finished and FAILED
+    if (success === 1) {
         return (
-            <IconButton style={{ backgroundColor: '#1976d2', color: '#ff0000' }}>
-                <SyncProblemIcon />
+            <IconButton
+                style={{
+                    backgroundColor: '#ffebee',
+                    color: '#f44336'
+                }}
+                size="small"
+            >
+                <ErrorIcon />
             </IconButton>
         );
-    if (status === 3 && current < total)
+    }
+
+    // success = 0: Running
+    // Show warning if errors encountered during run
+    if (hasErrors) {
         return (
-            <IconButton style={{ backgroundColor: '#1976d2', color: '#FFDE21' }}>
-                <SyncProblemIcon />
-            </IconButton>
+            <Tooltip title="Running with errors">
+                <IconButton
+                    style={{
+                        backgroundColor: '#fff3e0',
+                        color: '#ff9800'
+                    }}
+                    size="small"
+                >
+                    <WarningAmberIcon
+                        sx={{
+                            animation: 'pulse 1.5s infinite',
+                            '@keyframes pulse': {
+                                '0%': { opacity: 1 },
+                                '50%': { opacity: 0.5 },
+                                '100%': { opacity: 1 },
+                            },
+                        }}
+                    />
+                </IconButton>
+            </Tooltip>
         );
+    }
+
     return (
-        <IconButton style={{ backgroundColor: '#1976d2', color: '#fff', margin: 0 }}>
-            <SyncIcon />
+        <IconButton
+            style={{
+                backgroundColor: '#e3f2fd',
+                color: '#1976d2'
+            }}
+            size="small"
+        >
+            <SyncIcon
+                sx={{
+                    animation: 'spin 1s linear infinite',
+                    '@keyframes spin': {
+                        '0%': { transform: 'rotate(0deg)' },
+                        '100%': { transform: 'rotate(360deg)' },
+                    },
+                }}
+            />
         </IconButton>
     );
 }
 
-const getColor = (status, current, total) => {
-    if (status === 2) return 'green';
-    if (status === 3 && current === 0) return 'red';
-    if (status === 3 && current < total) return 'orange';
-    return '#1976d2';
+/**
+ * Get color based on success state and hasErrors
+ * 
+ *   success = 0: Blue (running) or Orange (running with errors)
+ *   success = 1: Red (failed)
+ *   success = 2: Green (succeeded) or Orange (succeeded with errors)
+ */
+const getColor = (success, hasErrors) => {
+    if (success === 1) return '#f44336'; // Red - failed
+    if (success === 2) {
+        return hasErrors ? '#ff9800' : '#4caf50'; // Orange if errors, otherwise Green
+    }
+    return hasErrors ? '#ff9800' : '#1976d2'; // Orange if errors while running, otherwise Blue
 };
 
+/**
+ * SyncProgress Component
+ * 
+ * Shows progress circle, status icon, and count
+ */
 const SyncProgress = ({ syncData }) => {
-    const { status, currentsavedobject, totalobjectToSave } = syncData;
-    const total = parseInt(totalobjectToSave);
-    const progress = total == 0 ? 0 : Math.round((currentsavedobject / total) * 100);
-    const color = getColor(status, currentsavedobject, total);
+    const { success, hasErrors, currentsavedobject, totalobjectToSave } = syncData;
+    const total = parseInt(totalobjectToSave) || 0;
+    const current = parseInt(currentsavedobject) || 0;
+    const progress = total === 0 ? 0 : Math.round((current / total) * 100);
+    const color = getColor(success, hasErrors);
 
     return (
         <Stack
@@ -801,8 +977,8 @@ const SyncProgress = ({ syncData }) => {
             <Item>
                 <Box sx={{ position: 'relative', display: 'inline-flex' }}>
                     <CircularProgress
-                        variant="determinate"
-                        value={progress}
+                        variant={success === 0 ? "indeterminate" : "determinate"}
+                        value={success === 0 ? undefined : progress}
                         size={"3rem"}
                         thickness={5}
                         sx={{ color }}
@@ -827,15 +1003,24 @@ const SyncProgress = ({ syncData }) => {
             </Item>
 
             <Item>
-                <Status status={status} current={currentsavedobject} total={total} />
+                <Status success={success} hasErrors={hasErrors} />
             </Item>
 
             <Item>
-                <Button
+                <Chip
+                    label={`${current}/${total}`}
                     size="small"
-                    variant="contained"
-                    style={{ borderRadius: 10, minWidth: 50, padding: 5, marginRight: 5 }}
-                >{currentsavedobject}/{total}</Button>
+                    sx={{
+                        fontWeight: 600,
+                        backgroundColor: success === 1 ? '#ffebee' :
+                            (success === 2 && hasErrors) ? '#fff3e0' :
+                                success === 2 ? '#e8f5e9' :
+                                    hasErrors ? '#fff3e0' :
+                                        '#e3f2fd',
+                        color: color,
+                        borderRadius: 2,
+                    }}
+                />
             </Item>
         </Stack>
     );
