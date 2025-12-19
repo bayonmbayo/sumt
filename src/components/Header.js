@@ -24,19 +24,38 @@ import Popper from '@mui/material/Popper';
 import Stack from '@mui/material/Stack';
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { userActions } from '../actions/user.actions';
 import logo from './lbm.png';
 
 const Header = () => {
     const dispatch = useDispatch();
     const theme = useTheme();
+    const location = useLocation();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const user = useSelector((state) => state.user.user);
 
+    // Get both user object and loggedIn status from Redux
+    const user = useSelector((state) => state.user.user);
+    const loggedIn = useSelector((state) => state.user.loggedIn);
+
+    // Define public pages where the menu should NOT appear
+    const publicPaths = ['/', '/login', '/passwortvergessen'];
+    const isPublicPage = publicPaths.includes(location.pathname) ||
+        location.pathname.startsWith('/confirmation/') ||
+        location.pathname.startsWith('/resettingpassword/');
+
+    // Only dispatch session check if not on a public page
     useEffect(() => {
-        dispatch(userActions.session());
-    }, [dispatch]);
+        if (!isPublicPage) {
+            dispatch(userActions.session());
+        }
+    }, [dispatch, isPublicPage]);
+
+    // Determine if user menu should be shown:
+    // 1. User object must exist
+    // 2. User must be logged in (loggedIn state is true)
+    // 3. We must NOT be on a public page
+    const showUserMenu = user && user.uuid && loggedIn && !isPublicPage;
 
     return (
         <>
@@ -77,7 +96,7 @@ const Header = () => {
                                 variant={isMobile ? 'h6' : 'h5'}
                                 fontWeight="bold"
                                 component={Link}
-                                to={user ? '/transfers' : '/'}
+                                to={showUserMenu ? '/transfers' : '/'}
                                 sx={{
                                     color: '#fff',
                                     textDecoration: 'none',
@@ -91,8 +110,8 @@ const Header = () => {
                             </Typography>
                         </Box>
 
-                        {/* User Menu */}
-                        {user && <UserMenu user={user} />}
+                        {/* User Menu - Only show when properly authenticated */}
+                        {showUserMenu && <UserMenu user={user} />}
                     </Toolbar>
                 </Container>
             </AppBar>

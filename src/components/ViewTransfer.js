@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box, Button, Chip, Container, Grid, IconButton, Paper, Stack, styled, Tooltip, Typography } from "@mui/material";
+import { Alert, AlertTitle, Box, Button, Chip, Container, Grid, IconButton, Paper, Stack, styled, Tooltip, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
@@ -27,7 +27,7 @@ const ViewTransfer = () => {
 
     useEffect(() => {
         dispatch(transferActions.getTransfer(transfer))
-    }, []);
+    }, [dispatch, transfer]);
 
     return (
         <div style={{ marginBottom: 100 }}>
@@ -38,6 +38,9 @@ const ViewTransfer = () => {
 }
 
 const ViewTransferBody = ({ transfer }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     // state.transfer.transfer contains { transfer: {...}, elements: [...] }
     const data = useSelector(state => state.transfer.transfer);
     const l = useSelector(state => state.transfer.loading);
@@ -89,19 +92,23 @@ const ViewTransferBody = ({ transfer }) => {
             {/* Transfer Header */}
             <Box sx={{ pt: 3, pb: 2 }}>
                 <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-                    <Typography variant="h5" fontWeight="bold" color="text.secondary">
-                        Transfer: {transferInfo?.title || 'Unknown'}
+                    <Typography variant={isMobile ? "h6" : "h5"} fontWeight="bold" color="text.secondary">
+                        Transfer: {isMobile && transferInfo?.title?.length > 25
+                            ? `${transferInfo.title.substring(0, 25)}...`
+                            : transferInfo?.title || 'Unknown'}
                     </Typography>
                     <TransferStatusChip status={transferInfo?.status} success={transferInfo?.success} />
                 </Stack>
 
                 {/* Transfer metadata */}
                 {transferInfo && (
-                    <Stack direction="row" spacing={2} sx={{ mt: 1 }} flexWrap="wrap" useFlexGap>
+                    <Stack direction="row" spacing={1} sx={{ mt: 1 }} flexWrap="wrap" useFlexGap>
                         {transferInfo.constructionProjectName && (
                             <Chip
                                 icon={<AccountTreeIcon />}
-                                label={transferInfo.constructionProjectName}
+                                label={isMobile && transferInfo.constructionProjectName.length > 20
+                                    ? `${transferInfo.constructionProjectName.substring(0, 20)}...`
+                                    : transferInfo.constructionProjectName}
                                 variant="outlined"
                                 color="primary"
                                 size="small"
@@ -168,12 +175,13 @@ const ViewTransferBody = ({ transfer }) => {
 
             {/* Element Statistics */}
             <Box sx={{ mb: 3 }}>
-                <Stack direction="row" spacing={2} flexWrap="wrap" useFlexGap>
+                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                     <Chip
                         icon={<CheckCircleIcon />}
-                        label={`${stats.success} Successful`}
+                        label={isMobile ? `${stats.success} OK` : `${stats.success} Successful`}
                         color="success"
                         variant="outlined"
+                        size={isMobile ? "small" : "medium"}
                     />
                     {stats.failed > 0 && (
                         <Chip
@@ -181,11 +189,13 @@ const ViewTransferBody = ({ transfer }) => {
                             label={`${stats.failed} Failed`}
                             color="error"
                             variant="outlined"
+                            size={isMobile ? "small" : "medium"}
                         />
                     )}
                     <Chip
                         label={`${stats.total} Total`}
                         variant="outlined"
+                        size={isMobile ? "small" : "medium"}
                     />
                 </Stack>
             </Box>
@@ -193,9 +203,14 @@ const ViewTransferBody = ({ transfer }) => {
             {/* Parent Element */}
             {parentElement && (
                 <div style={{ marginTop: 30, marginBottom: 40 }}>
-                    <Typography variant="h6" fontWeight="bold" color="#1976d2" style={{ marginBottom: 15, display: 'flex', alignItems: 'center' }}>
-                        <AccountTreeIcon style={{ marginRight: 8 }} />
-                        Parent Element (Intervention)
+                    <Typography
+                        variant={isMobile ? "subtitle1" : "h6"}
+                        fontWeight="bold"
+                        color="#1976d2"
+                        sx={{ mb: 2, display: 'flex', alignItems: 'center' }}
+                    >
+                        <AccountTreeIcon sx={{ mr: 1, fontSize: isMobile ? 20 : 24 }} />
+                        {isMobile ? "Parent (EIV)" : "Parent Element (Intervention)"}
                     </Typography>
                     <ParentBauprojekt data={parentElement} index={0} />
                 </div>
@@ -204,22 +219,28 @@ const ViewTransferBody = ({ transfer }) => {
             {/* Children Elements */}
             {childElements.length > 0 && (
                 <div style={{ marginTop: 40 }}>
-                    <Typography variant="h6" fontWeight="bold" color="#1976d2" style={{ marginBottom: 15, display: 'flex', alignItems: 'center' }}>
-                        <ChildCareIcon style={{ marginRight: 8 }} />
-                        Children Elements ({childElements.length})
+                    <Typography
+                        variant={isMobile ? "subtitle1" : "h6"}
+                        fontWeight="bold"
+                        color="#1976d2"
+                        sx={{ mb: 2, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}
+                    >
+                        <ChildCareIcon sx={{ mr: 0.5, fontSize: isMobile ? 20 : 24 }} />
+                        {isMobile ? `Children (${childElements.length})` : `Children Elements (${childElements.length})`}
                         {childElements.filter(e => !e.transfered).length > 0 && (
                             <Chip
                                 icon={<WarningAmberIcon />}
-                                label={`${childElements.filter(e => !e.transfered).length} with errors`}
+                                label={isMobile
+                                    ? `${childElements.filter(e => !e.transfered).length} err`
+                                    : `${childElements.filter(e => !e.transfered).length} with errors`}
                                 color="warning"
                                 size="small"
-                                sx={{ ml: 2 }}
                             />
                         )}
                     </Typography>
-                    <Grid container spacing={3}>
+                    <Grid container spacing={isMobile ? 2 : 3}>
                         {childElements.map((d, idx) => (
-                            <Grid key={idx + 1} size={{ xs: 12, sm: 12, md: 12, lg: 12 }}>
+                            <Grid key={idx + 1} size={{ xs: 12 }}>
                                 <ChildBauprojekt data={d} index={idx + 1} />
                             </Grid>
                         ))}
@@ -238,6 +259,9 @@ const ViewTransferBody = ({ transfer }) => {
  * success = 2: Succeeded
  */
 const TransferStatusChip = ({ status, success }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
     if (success === 0) {
         return (
             <Chip
@@ -248,8 +272,9 @@ const TransferStatusChip = ({ status, success }) => {
                         '100%': { transform: 'rotate(360deg)' },
                     },
                 }} />}
-                label="Running"
+                label={isMobile ? "..." : "Running"}
                 color="info"
+                size={isMobile ? "small" : "medium"}
                 sx={{ fontWeight: 600 }}
             />
         );
@@ -261,6 +286,7 @@ const TransferStatusChip = ({ status, success }) => {
                 icon={<ErrorIcon />}
                 label="Failed"
                 color="error"
+                size={isMobile ? "small" : "medium"}
                 sx={{ fontWeight: 600 }}
             />
         );
@@ -270,8 +296,9 @@ const TransferStatusChip = ({ status, success }) => {
         return (
             <Chip
                 icon={<CheckCircleIcon />}
-                label="Succeeded"
+                label={isMobile ? "OK" : "Succeeded"}
                 color="success"
+                size={isMobile ? "small" : "medium"}
                 sx={{ fontWeight: 600 }}
             />
         );
@@ -282,8 +309,15 @@ const TransferStatusChip = ({ status, success }) => {
 
 // Parent Component - Shows only KSP
 const ParentBauprojekt = ({ data, index }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [isClicked, setIsClicked] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    // Truncate title for mobile (20 chars)
+    const displayTitle = isMobile && data.title?.length > 20
+        ? `${data.title.substring(0, 20)}...`
+        : data.title;
 
     const handleClick = () => {
         setIsClicked(!isClicked);
@@ -330,95 +364,153 @@ const ParentBauprojekt = ({ data, index }) => {
 
             <Button
                 onClick={() => handleClick()}
-                style={{
+                sx={{
                     width: '100%',
-                    height: 60,
+                    minHeight: isMobile ? 50 : 60,
+                    height: 'auto',
+                    py: isMobile ? 1 : 1.5,
                     backgroundColor: hasError ? '#d32f2f' : '#1976d2',
-                    borderRadius: 20,
+                    borderRadius: isMobile ? '12px' : '20px',
                     justifyContent: 'flex-start',
-                    marginBottom: 10,
-                    paddingRight: 10
+                    mb: 1,
+                    pr: 1,
+                    '&:hover': {
+                        backgroundColor: hasError ? '#b71c1c' : '#1565c0',
+                    }
                 }}>
                 <Stack
                     direction="row"
                     justifyContent="flex-start"
                     alignItems="center"
-                    spacing={2}
-                    style={{ width: '100%' }}
+                    spacing={isMobile ? 1 : 2}
+                    sx={{ width: '100%', flexWrap: 'nowrap' }}
                 >
-                    <Item>
-                        <AccountTreeIcon style={{ fontSize: 28 }} />
+                    <Item sx={{ p: isMobile ? 0.5 : 1 }}>
+                        <AccountTreeIcon sx={{ fontSize: isMobile ? 20 : 28 }} />
                     </Item>
-                    <Item>
-                        <Typography variant="h6" fontWeight="bold" color="#fff">
-                            {data.title} {data.transfered ?
-                                <CheckCircleSharpIcon style={{ marginLeft: 10, color: '#00ff00' }} /> :
-                                <ErrorSharpIcon style={{ marginLeft: 10, color: '#ffcdd2' }} />
+                    <Item sx={{ p: isMobile ? 0.5 : 1, minWidth: 0, flex: 1 }}>
+                        <Typography
+                            variant={isMobile ? "body2" : "h6"}
+                            fontWeight="bold"
+                            color="#fff"
+                            sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            {displayTitle}
+                            {data.transfered ?
+                                <CheckCircleSharpIcon sx={{ ml: 0.5, fontSize: isMobile ? 14 : 20, color: '#00ff00' }} /> :
+                                <ErrorSharpIcon sx={{ ml: 0.5, fontSize: isMobile ? 14 : 20, color: '#ffcdd2' }} />
                             }
                         </Typography>
                     </Item>
-                    <Item>
-                        <Typography variant="body1" color="#fff" style={{
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                            padding: '4px 12px',
-                            borderRadius: 15
-                        }}>
-                            INTERVENTION
+                    <Item sx={{ p: isMobile ? 0.5 : 1 }}>
+                        <Typography
+                            variant="body2"
+                            color="#fff"
+                            sx={{
+                                backgroundColor: 'rgba(255,255,255,0.2)',
+                                px: isMobile ? 1 : 1.5,
+                                py: 0.5,
+                                borderRadius: '15px',
+                                fontSize: isMobile ? '0.65rem' : '0.875rem',
+                                fontWeight: 600
+                            }}
+                        >
+                            {isMobile ? "EIV" : "INTERVENTION"}
                         </Typography>
                     </Item>
-                    <Item style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                        <Tooltip title={copied ? "Link copied!" : "Copy link"}>
-                            <IconButton
-                                onClick={handleCopyLink}
-                                size="small"
-                                style={{
-                                    backgroundColor: 'rgba(255,255,255,0.2)',
-                                    color: '#fff'
-                                }}
-                            >
-                                <ContentCopyIcon style={{ fontSize: 18 }} />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Open in new tab">
-                            <IconButton
-                                onClick={handleOpenInNewTab}
-                                size="small"
-                                style={{
-                                    backgroundColor: 'rgba(255,255,255,0.2)',
-                                    color: '#fff'
-                                }}
-                            >
-                                <OpenInNewIcon style={{ fontSize: 18 }} />
-                            </IconButton>
-                        </Tooltip>
-                        <ExpandMoreIcon style={{
+                    <Item sx={{ ml: 'auto', display: 'flex', gap: 0.5, p: isMobile ? 0.5 : 1 }}>
+                        {!isMobile && (
+                            <>
+                                <Tooltip title={copied ? "Link copied!" : "Copy link"}>
+                                    <IconButton
+                                        onClick={handleCopyLink}
+                                        size="small"
+                                        sx={{
+                                            backgroundColor: 'rgba(255,255,255,0.2)',
+                                            color: '#fff',
+                                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.3)' }
+                                        }}
+                                    >
+                                        <ContentCopyIcon sx={{ fontSize: 18 }} />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Open in new tab">
+                                    <IconButton
+                                        onClick={handleOpenInNewTab}
+                                        size="small"
+                                        sx={{
+                                            backgroundColor: 'rgba(255,255,255,0.2)',
+                                            color: '#fff',
+                                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.3)' }
+                                        }}
+                                    >
+                                        <OpenInNewIcon sx={{ fontSize: 18 }} />
+                                    </IconButton>
+                                </Tooltip>
+                            </>
+                        )}
+                        <ExpandMoreIcon sx={{
                             transform: isClicked ? 'rotate(180deg)' : 'rotate(0deg)',
-                            transition: 'transform 0.3s'
+                            transition: 'transform 0.3s',
+                            fontSize: isMobile ? 20 : 24
                         }} />
                     </Item>
                 </Stack>
             </Button>
 
             {isClicked && (
-                <div style={{
-                    margin: '20px 0',
-                    padding: 20,
+                <Box sx={{
+                    my: isMobile ? 1 : 2,
+                    p: isMobile ? 1.5 : 2.5,
                     backgroundColor: '#f8f9fa',
-                    borderRadius: 15,
+                    borderRadius: isMobile ? '12px' : '15px',
                     border: hasError ? '2px solid #d32f2f' : '2px solid #1976d2'
                 }}>
-                    <div style={{ width: '100%' }}>
-                        <Typography variant="h5" fontWeight="bold" color="#1976d2" style={{
-                            marginBottom: 20,
+                    {/* Mobile action buttons */}
+                    {isMobile && (
+                        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<ContentCopyIcon />}
+                                onClick={handleCopyLink}
+                                sx={{ borderRadius: 2, flex: 1 }}
+                            >
+                                {copied ? "Copied!" : "Copy"}
+                            </Button>
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<OpenInNewIcon />}
+                                onClick={handleOpenInNewTab}
+                                sx={{ borderRadius: 2, flex: 1 }}
+                            >
+                                Open
+                            </Button>
+                        </Stack>
+                    )}
+
+                    <Typography
+                        variant={isMobile ? "subtitle1" : "h5"}
+                        fontWeight="bold"
+                        color="#1976d2"
+                        sx={{
+                            mb: 2,
                             display: 'flex',
                             alignItems: 'center'
-                        }}>
-                            <AccountTreeIcon style={{ marginRight: 10 }} />
-                            KSP Data (Parent)
-                        </Typography>
-                        <JsonViewer data={data.ksp} />
-                    </div>
-                </div>
+                        }}
+                    >
+                        <AccountTreeIcon sx={{ mr: 1, fontSize: isMobile ? 20 : 28 }} />
+                        KSP Data {isMobile ? "" : "(Parent)"}
+                    </Typography>
+                    <JsonViewer data={data.ksp} compact={isMobile} />
+                </Box>
             )}
         </div>
     );
@@ -426,8 +518,16 @@ const ParentBauprojekt = ({ data, index }) => {
 
 // Child Component - Shows both flistra and KSP
 const ChildBauprojekt = ({ data, index }) => {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const [isClicked, setIsClicked] = useState(false);
     const [copied, setCopied] = useState(false);
+
+    // Truncate title for mobile (20 chars) or desktop (80 chars)
+    const maxTitleLength = isMobile ? 20 : 80;
+    const displayTitle = data.title?.length > maxTitleLength
+        ? `${data.title.substring(0, maxTitleLength)}...`
+        : data.title;
 
     const handleClick = () => {
         setIsClicked(!isClicked);
@@ -468,55 +568,81 @@ const ChildBauprojekt = ({ data, index }) => {
                     variant="outlined"
                 >
                     <Typography variant="body2" fontWeight="medium">
-                        {data.bemerkung}
+                        {isMobile && data.bemerkung.length > 50
+                            ? `${data.bemerkung.substring(0, 50)}...`
+                            : data.bemerkung}
                     </Typography>
                 </Alert>
             )}
 
             <Button
                 onClick={() => handleClick()}
-                style={{
+                sx={{
                     width: '100%',
-                    height: 50,
+                    minHeight: isMobile ? 44 : 50,
+                    height: 'auto',
+                    py: isMobile ? 0.75 : 1,
                     backgroundColor: hasError ? '#d32f2f' : '#1976d2',
-                    borderRadius: 15,
+                    borderRadius: isMobile ? '10px' : '15px',
                     justifyContent: 'flex-start',
-                    marginBottom: 10,
-                    paddingRight: 10
+                    mb: 1,
+                    pr: 1,
+                    '&:hover': {
+                        backgroundColor: hasError ? '#b71c1c' : '#1565c0',
+                    }
                 }}>
                 <Stack
                     direction="row"
                     justifyContent="flex-start"
                     alignItems="center"
-                    spacing={1}
-                    style={{ width: '100%' }}
+                    spacing={isMobile ? 0.5 : 1}
+                    sx={{ width: '100%', flexWrap: 'nowrap' }}
                 >
-                    <Item>
-                        <ChildCareIcon style={{ fontSize: 20 }} />
+                    <Item sx={{ p: isMobile ? 0.25 : 1 }}>
+                        <ChildCareIcon sx={{ fontSize: isMobile ? 16 : 20 }} />
                     </Item>
-                    <Item>
-                        <Typography variant="h6" fontWeight="bold" color="#fff" style={{ fontSize: '0.9rem' }}>
-                            {`[${index}]`} {data.title?.length > 80 ? `${data.title.substring(0, 80)}...` : data.title}
+                    <Item sx={{ p: isMobile ? 0.25 : 1, minWidth: 0, flex: 1 }}>
+                        <Typography
+                            variant="body2"
+                            fontWeight="bold"
+                            color="#fff"
+                            sx={{
+                                fontSize: isMobile ? '0.7rem' : '0.9rem',
+                                display: 'flex',
+                                alignItems: 'center',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            <Box component="span" sx={{ mr: 0.5 }}>{`[${index}]`}</Box>
+                            {displayTitle}
                             {data.transfered ?
-                                <CheckCircleSharpIcon style={{ marginLeft: 5, fontSize: 16, color: '#00ff00' }} /> :
-                                <ErrorSharpIcon style={{ marginLeft: 5, fontSize: 16, color: '#ffcdd2' }} />
+                                <CheckCircleSharpIcon sx={{ ml: 0.5, fontSize: isMobile ? 12 : 16, color: '#00ff00', flexShrink: 0 }} /> :
+                                <ErrorSharpIcon sx={{ ml: 0.5, fontSize: isMobile ? 12 : 16, color: '#ffcdd2', flexShrink: 0 }} />
                             }
                         </Typography>
                     </Item>
-                    <Item>
-                        <Typography variant="body1" color="#fff" style={{
-                            backgroundColor: 'rgba(255,255,255,0.2)',
-                            padding: '4px 12px',
-                            borderRadius: 15,
-                            fontSize: '0.75rem'
-                        }}>
-                            KOMPENSATION
+                    <Item sx={{ p: isMobile ? 0.25 : 1 }}>
+                        <Typography
+                            variant="body2"
+                            color="#fff"
+                            sx={{
+                                backgroundColor: 'rgba(255,255,255,0.2)',
+                                px: isMobile ? 0.75 : 1.5,
+                                py: 0.25,
+                                borderRadius: '15px',
+                                fontSize: isMobile ? '0.6rem' : '0.75rem',
+                                fontWeight: 600
+                            }}
+                        >
+                            {isMobile ? "KOM" : "KOMPENSATION"}
                         </Typography>
                     </Item>
-                    {hasError && (
-                        <Item>
+                    {hasError && !isMobile && (
+                        <Item sx={{ p: 0.5 }}>
                             <Chip
-                                icon={<ErrorIcon style={{ color: '#fff', fontSize: 14 }} />}
+                                icon={<ErrorIcon sx={{ color: '#fff', fontSize: 14 }} />}
                                 label="Error"
                                 size="small"
                                 sx={{
@@ -528,93 +654,137 @@ const ChildBauprojekt = ({ data, index }) => {
                             />
                         </Item>
                     )}
-                    <Item style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                        {!hasError ? <><Tooltip title={copied ? "Link copied!" : "Copy link"}>
-                            <IconButton
-                                onClick={handleCopyLink}
-                                size="small"
-                                style={{
-                                    backgroundColor: 'rgba(255,255,255,0.2)',
-                                    color: '#fff'
-                                }}
-                            >
-                                <ContentCopyIcon style={{ fontSize: 16 }} />
-                            </IconButton>
-                        </Tooltip>
-                            <Tooltip title="Open in new tab">
-                                <IconButton
-                                    onClick={handleOpenInNewTab}
-                                    size="small"
-                                    style={{
-                                        backgroundColor: 'rgba(255,255,255,0.2)',
-                                        color: '#fff'
-                                    }}
-                                >
-                                    <OpenInNewIcon style={{ fontSize: 16 }} />
-                                </IconButton>
-                            </Tooltip></> : null}
-                        <ExpandMoreIcon style={{
+                    <Item sx={{ ml: 'auto', display: 'flex', gap: 0.5, p: isMobile ? 0.25 : 1 }}>
+                        {!hasError && !isMobile && (
+                            <>
+                                <Tooltip title={copied ? "Link copied!" : "Copy link"}>
+                                    <IconButton
+                                        onClick={handleCopyLink}
+                                        size="small"
+                                        sx={{
+                                            backgroundColor: 'rgba(255,255,255,0.2)',
+                                            color: '#fff',
+                                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.3)' }
+                                        }}
+                                    >
+                                        <ContentCopyIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Open in new tab">
+                                    <IconButton
+                                        onClick={handleOpenInNewTab}
+                                        size="small"
+                                        sx={{
+                                            backgroundColor: 'rgba(255,255,255,0.2)',
+                                            color: '#fff',
+                                            '&:hover': { backgroundColor: 'rgba(255,255,255,0.3)' }
+                                        }}
+                                    >
+                                        <OpenInNewIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                </Tooltip>
+                            </>
+                        )}
+                        <ExpandMoreIcon sx={{
                             transform: isClicked ? 'rotate(180deg)' : 'rotate(0deg)',
                             transition: 'transform 0.3s',
-                            fontSize: 20
+                            fontSize: isMobile ? 18 : 20
                         }} />
                     </Item>
                 </Stack>
             </Button>
 
             {isClicked && (
-                <div style={{
-                    margin: '10px 20px 20px 20px',
-                    padding: 15,
+                <Box sx={{
+                    mx: isMobile ? 1 : 2.5,
+                    my: isMobile ? 1 : 1.5,
+                    p: isMobile ? 1.5 : 2,
                     backgroundColor: '#f8f9fa',
-                    borderRadius: 12,
+                    borderRadius: isMobile ? '10px' : '12px',
                     border: hasError ? '2px solid #d32f2f' : '2px solid #1976d2'
                 }}>
+                    {/* Mobile action buttons */}
+                    {isMobile && !hasError && (
+                        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<ContentCopyIcon />}
+                                onClick={handleCopyLink}
+                                sx={{ borderRadius: 2, flex: 1, fontSize: '0.7rem' }}
+                            >
+                                {copied ? "Copied!" : "Copy"}
+                            </Button>
+                            <Button
+                                size="small"
+                                variant="outlined"
+                                startIcon={<OpenInNewIcon />}
+                                onClick={handleOpenInNewTab}
+                                sx={{ borderRadius: 2, flex: 1, fontSize: '0.7rem' }}
+                            >
+                                Open
+                            </Button>
+                        </Stack>
+                    )}
+
                     {/* Error details if available */}
                     {hasError && data.bemerkung && (
                         <Alert
                             severity="error"
                             sx={{ mb: 2, borderRadius: 2 }}
                         >
-                            <AlertTitle>Error Details</AlertTitle>
-                            {data.bemerkung}
+                            <AlertTitle sx={{ fontSize: isMobile ? '0.85rem' : '1rem' }}>
+                                Error Details
+                            </AlertTitle>
+                            <Typography variant="body2" sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
+                                {data.bemerkung}
+                            </Typography>
                         </Alert>
                     )}
 
-                    <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        gap: '20px'
-                    }}>
+                    <Stack
+                        direction={isMobile ? 'column' : 'row'}
+                        spacing={isMobile ? 2 : 3}
+                    >
                         {/* Column 1 - Flistra */}
                         {data.flistra && (
-                            <div style={{ flex: 1, minWidth: '300px' }}>
-                                <Typography variant="h6" fontWeight="bold" color="text.secondary" style={{
-                                    padding: '10px 0',
-                                    display: 'flex',
-                                    alignItems: 'center'
-                                }}>
-                                    📥 Flistra (Input)
+                            <Box sx={{ flex: 1, minWidth: isMobile ? '100%' : '300px' }}>
+                                <Typography
+                                    variant={isMobile ? "subtitle2" : "h6"}
+                                    fontWeight="bold"
+                                    color="text.secondary"
+                                    sx={{
+                                        py: 1,
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    📥 Flistra {isMobile ? "" : "(Input)"}
                                 </Typography>
-                                <JsonViewer data={data.flistra} />
-                            </div>
+                                <JsonViewer data={data.flistra} compact={isMobile} />
+                            </Box>
                         )}
 
                         {/* Column 2 - KSP */}
                         {data.ksp && (
-                            <div style={{ flex: 1, minWidth: '300px' }}>
-                                <Typography variant="h6" fontWeight="bold" color="text.secondary" style={{
-                                    padding: '10px 0',
-                                    display: 'flex',
-                                    alignItems: 'center'
-                                }}>
-                                    📤 KSP (Output)
+                            <Box sx={{ flex: 1, minWidth: isMobile ? '100%' : '300px' }}>
+                                <Typography
+                                    variant={isMobile ? "subtitle2" : "h6"}
+                                    fontWeight="bold"
+                                    color="text.secondary"
+                                    sx={{
+                                        py: 1,
+                                        display: 'flex',
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    📤 KSP {isMobile ? "" : "(Output)"}
                                 </Typography>
-                                <JsonViewer data={data.ksp} />
-                            </div>
+                                <JsonViewer data={data.ksp} compact={isMobile} />
+                            </Box>
                         )}
-                    </div>
-                </div>
+                    </Stack>
+                </Box>
             )}
         </div>
     );
@@ -631,16 +801,16 @@ const Item = styled(Paper)(({ theme }) => ({
 const JsonViewer = ({ data, compact = false }) => {
     if (!data) {
         return (
-            <div style={{
-                padding: "10px",
+            <Box sx={{
+                p: compact ? 1 : 1.5,
                 backgroundColor: "#f9f9f9",
-                borderRadius: "8px",
+                borderRadius: 2,
                 border: "2px solid #ccc",
             }}>
                 <Typography variant="body2" color="text.secondary">
                     No data available
                 </Typography>
-            </div>
+            </Box>
         );
     }
 
@@ -649,35 +819,39 @@ const JsonViewer = ({ data, compact = false }) => {
         parsedData = typeof data === 'string' ? JSON.parse(data) : data;
     } catch (e) {
         return (
-            <div style={{
-                padding: "10px",
+            <Box sx={{
+                p: compact ? 1 : 1.5,
                 backgroundColor: "#ffebee",
-                borderRadius: "8px",
+                borderRadius: 2,
                 border: "2px solid #f44336",
             }}>
                 <Typography variant="body2" color="error">
                     Invalid JSON data
                 </Typography>
-                <pre style={{
-                    overflow: 'auto',
-                    maxHeight: 200,
-                    fontSize: '0.75rem',
-                    marginTop: 8
-                }}>
+                <Box
+                    component="pre"
+                    sx={{
+                        overflow: 'auto',
+                        maxHeight: 200,
+                        fontSize: compact ? '0.65rem' : '0.75rem',
+                        mt: 1
+                    }}
+                >
                     {data}
-                </pre>
-            </div>
+                </Box>
+            </Box>
         );
     }
 
     return (
-        <div style={{
-            padding: compact ? "8px" : "10px",
+        <Box sx={{
+            p: compact ? 1 : 1.5,
             backgroundColor: "#f9f9f9",
-            borderRadius: "8px",
+            borderRadius: 2,
             border: "2px solid #1976d2",
             boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-            fontSize: compact ? '0.8rem' : '1rem'
+            fontSize: compact ? '0.75rem' : '1rem',
+            overflow: 'auto'
         }}>
             <ReactJson
                 src={parsedData}
@@ -705,8 +879,9 @@ const JsonViewer = ({ data, compact = false }) => {
                 displayObjectSize={false}
                 indentWidth={compact ? 1 : 2}
                 iconStyle={compact ? "square" : "triangle"}
+                style={{ fontSize: compact ? '0.7rem' : '0.85rem' }}
             />
-        </div>
+        </Box>
     );
 };
 
