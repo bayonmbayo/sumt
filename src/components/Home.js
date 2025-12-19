@@ -2,8 +2,11 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
+import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
+import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import SearchIcon from '@mui/icons-material/Search';
@@ -12,7 +15,8 @@ import SubjectIcon from '@mui/icons-material/Subject';
 import SyncIcon from '@mui/icons-material/Sync';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
-    Box, Button, Card, CardActionArea, CardContent, Chip, CircularProgress, ClickAwayListener, Container, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Grow, IconButton, MenuItem, MenuList, Paper, Popper, Stack, styled, TextField, Tooltip, Typography, useMediaQuery,
+    Box, Button, Card, CardActionArea, CardContent, Chip, CircularProgress, ClickAwayListener, Container,
+    FormControl, Grid, Grow, IconButton, MenuItem, MenuList, Paper, Popper, Select, Stack, styled, TextField, Tooltip, Typography, useMediaQuery,
     useTheme
 } from '@mui/material';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -51,12 +55,26 @@ const Home = () => {
 
 const WORKER = workerConstants.WORKER
 
-export const HomeNavigation = ({ onSearchChange, searchTerm }) => {
+export const HomeNavigation = ({
+    onSearchChange,
+    searchTerm,
+    searchPlaceholder = "Search Transfer",
+    searchLabel = "Search",
+    showTransfersButton = true,
+    showNewButton = true,
+    showSettingsButton = true,
+}) => {
     const navigate = useNavigate()
     const location = useLocation();
-    const [modalOpen, setModalOpen] = useState(false);
-    const [featureCount, setFeatureCount] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    // Custom breakpoint for showing icon-only buttons (866px)
+    const isCompact = useMediaQuery('(max-width:866px)');
+
+    // Commented out - Simulate Auto-Sync functionality
+    // const [modalOpen, setModalOpen] = useState(false);
+    // const [featureCount, setFeatureCount] = useState('');
+    // const [isSubmitting, setIsSubmitting] = useState(false);
 
     const goToTransfers = () => {
         navigate("/transfers")
@@ -80,15 +98,16 @@ export const HomeNavigation = ({ onSearchChange, searchTerm }) => {
         navigate("/settings")
     }
 
-    const handleSimulateAutoSync = () => {
-        setModalOpen(true);
-    }
+    // Commented out - Simulate Auto-Sync handlers
+    // const handleSimulateAutoSync = () => {
+    //     setModalOpen(true);
+    // }
 
-    const handleCloseModal = () => {
-        setModalOpen(false);
-        setFeatureCount('');
-        setIsSubmitting(false);
-    }
+    // const handleCloseModal = () => {
+    //     setModalOpen(false);
+    //     setFeatureCount('');
+    //     setIsSubmitting(false);
+    // }
 
     const handleSearchChange = (event) => {
         const value = event.target.value;
@@ -97,106 +116,142 @@ export const HomeNavigation = ({ onSearchChange, searchTerm }) => {
         }
     };
 
-    const handleSubmitFeatureData = async () => {
-        if (!featureCount || isNaN(featureCount) || parseInt(featureCount) <= 0) {
-            alert('Please enter a valid number greater than 0');
-            return;
-        }
+    // Commented out - Simulate Auto-Sync submit handler
+    // const handleSubmitFeatureData = async () => {
+    //     if (!featureCount || isNaN(featureCount) || parseInt(featureCount) <= 0) {
+    //         alert('Please enter a valid number greater than 0');
+    //         return;
+    //     }
 
-        setIsSubmitting(true);
+    //     setIsSubmitting(true);
 
-        try {
-            const payload = {
-                featureDataCount: parseInt(featureCount)
-            };
+    //     try {
+    //         const payload = {
+    //             featureDataCount: parseInt(featureCount)
+    //         };
 
-            const response = await fetch(WORKER + "makesimulation", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload)
-            });
+    //         const response = await fetch(WORKER + "makesimulation", {
+    //             method: 'POST',
+    //             headers: {
+    //                 'Content-Type': 'application/json',
+    //             },
+    //             body: JSON.stringify(payload)
+    //         });
 
-            if (response.ok) {
-                const result = await response.json();
-                console.log('Auto-sync simulation started:', result);
-                handleCloseModal();
-            } else {
-                throw new Error('Failed to start simulation');
-            }
-        } catch (error) {
-            console.error('Error submitting feature data:', error);
-            alert('Failed to start simulation. Please try again.');
-        } finally {
-            setIsSubmitting(false);
-            navigate(0)
-        }
-    }
+    //         if (response.ok) {
+    //             const result = await response.json();
+    //             console.log('Auto-sync simulation started:', result);
+    //             handleCloseModal();
+    //         } else {
+    //             throw new Error('Failed to start simulation');
+    //         }
+    //     } catch (error) {
+    //         console.error('Error submitting feature data:', error);
+    //         alert('Failed to start simulation. Please try again.');
+    //     } finally {
+    //         setIsSubmitting(false);
+    //         navigate(0)
+    //     }
+    // }
 
     return (
         <>
             <Container>
                 <Stack
-                    direction="row"
-                    justifyContent="flex-start"
-                    alignItems="center"
-                    p={1}
-                >
-                    <Item>
-                        <Button
-                            size="large"
-                            variant="contained"
-                            style={{ borderRadius: 20, minWidth: 0, padding: 15, marginRight: 10 }}
-                            onClick={() => goToTransfers()}
-                        >
-                            <RemoveRedEyeIcon style={{ marginRight: 10 }} />View Transfers
-                        </Button>
-                    </Item>
-                    <Item>
-                        <Button
-                            size="large"
-                            variant="outlined"
-                            style={{
-                                borderRadius: 20,
-                                minWidth: 0,
-                                padding: 15,
-                                borderColor: '#1976d2',
-                                color: '#1976d2'
-                            }}
-                            onClick={handleSimulateAutoSync}
-                        >
-                            <SyncIcon style={{ marginRight: 10 }} />Simulate Auto-Sync
-                        </Button>
-                    </Item>
-                </Stack>
-                <Stack
-                    direction="row"
+                    direction={isCompact ? 'column' : 'row'}
                     justifyContent="space-between"
-                    alignItems="center"
-                    spacing={1}
+                    alignItems={isCompact ? 'stretch' : 'center'}
+                    spacing={2}
+                    sx={{ py: 2 }}
                 >
-                    <Item>
-                        <Stack
-                            direction="row"
-                            justifyContent="flex-start"
-                            alignItems="center"
-                            spacing={1}
-                        >
-                            <Item>
-                                <Button size="large" variant="contained" style={{ borderRadius: 20, minWidth: 0, padding: 15 }} onClick={() => goToNewTransfer()}><AddCircleIcon style={{ marginRight: 10 }} />New</Button>
-                            </Item>
-                            <Item>
-                                <Button size="large" variant="contained" style={{ borderRadius: 20, minWidth: 0, padding: 15 }} onClick={() => goToSettings()}><SettingsSuggestIcon style={{ marginRight: 10 }} /> Settings</Button>
-                            </Item>
-                        </Stack>
-                    </Item>
-                    <Item>
+                    {/* Action Buttons */}
+                    <Stack
+                        direction="row"
+                        justifyContent={isCompact ? 'center' : 'flex-start'}
+                        alignItems="center"
+                        spacing={1}
+                    >
+                        {showTransfersButton && (
+                            <Tooltip title="View Transfers">
+                                <Button
+                                    size="large"
+                                    variant="contained"
+                                    sx={{
+                                        borderRadius: 20,
+                                        minWidth: isCompact ? 50 : 'auto',
+                                        padding: isCompact ? '12px' : '12px 20px',
+                                    }}
+                                    onClick={() => goToTransfers()}
+                                >
+                                    <RemoveRedEyeIcon sx={{ mr: isCompact ? 0 : 1 }} />
+                                    {!isCompact && 'View Transfers'}
+                                </Button>
+                            </Tooltip>
+                        )}
+
+                        {showNewButton && (
+                            <Tooltip title="New Transfer">
+                                <Button
+                                    size="large"
+                                    variant="contained"
+                                    sx={{
+                                        borderRadius: 20,
+                                        minWidth: isCompact ? 50 : 'auto',
+                                        padding: isCompact ? '12px' : '12px 20px',
+                                    }}
+                                    onClick={() => goToNewTransfer()}
+                                >
+                                    <AddCircleIcon sx={{ mr: isCompact ? 0 : 1 }} />
+                                    {!isCompact && 'New'}
+                                </Button>
+                            </Tooltip>
+                        )}
+
+                        {showSettingsButton && (
+                            <Tooltip title="Settings">
+                                <Button
+                                    size="large"
+                                    variant="contained"
+                                    sx={{
+                                        borderRadius: 20,
+                                        minWidth: isCompact ? 50 : 'auto',
+                                        padding: isCompact ? '12px' : '12px 20px',
+                                    }}
+                                    onClick={() => goToSettings()}
+                                >
+                                    <SettingsSuggestIcon sx={{ mr: isCompact ? 0 : 1 }} />
+                                    {!isCompact && 'Settings'}
+                                </Button>
+                            </Tooltip>
+                        )}
+
+                        {/* Commented out - Simulate Auto-Sync Button */}
+                        {/* <Tooltip title="Simulate Auto-Sync">
+                            <Button
+                                size="large"
+                                variant="outlined"
+                                sx={{
+                                    borderRadius: 20,
+                                    minWidth: isMobile ? 50 : 'auto',
+                                    padding: isMobile ? '12px' : '12px 20px',
+                                    borderColor: '#1976d2',
+                                    color: '#1976d2'
+                                }}
+                                onClick={handleSimulateAutoSync}
+                            >
+                                <SyncIcon sx={{ mr: isMobile ? 0 : 1 }} />
+                                {!isMobile && 'Simulate Auto-Sync'}
+                            </Button>
+                        </Tooltip> */}
+                    </Stack>
+
+                    {/* Search Field */}
+                    <Box sx={{ minWidth: isCompact ? '100%' : 300, maxWidth: { sm: 400 } }}>
                         <TextField
                             fullWidth
-                            label="Search"
-                            placeholder="Search Transfer"
-                            margin="normal"
+                            label={searchLabel}
+                            placeholder={searchPlaceholder}
+                            size="small"
                             value={searchTerm}
                             onChange={handleSearchChange}
                             InputProps={{
@@ -211,12 +266,12 @@ export const HomeNavigation = ({ onSearchChange, searchTerm }) => {
                                 style: { color: '#1976d2' }
                             }}
                         />
-                    </Item>
+                    </Box>
                 </Stack>
             </Container>
 
-            {/* Simulate Auto-Sync Modal */}
-            <Dialog
+            {/* Commented out - Simulate Auto-Sync Modal */}
+            {/* <Dialog
                 open={modalOpen}
                 onClose={handleCloseModal}
                 maxWidth="sm"
@@ -308,7 +363,7 @@ export const HomeNavigation = ({ onSearchChange, searchTerm }) => {
                         )}
                     </Button>
                 </DialogActions>
-            </Dialog>
+            </Dialog> */}
         </>
     );
 };
@@ -329,7 +384,8 @@ const Transfers = ({ searchTerm }) => {
     const dispatch = useDispatch();
 
     const [page, setPage] = useState(1);
-    const [dataLimit, setDataLimit] = useState(1000);
+    const [dataLimit, setDataLimit] = useState(10);
+    const pageSizeOptions = [10, 20, 50, 100];
 
     const getFilteredData = () => {
         if (!t || !t.transfers) return [];
@@ -357,6 +413,24 @@ const Transfers = ({ searchTerm }) => {
         const startIndex = page * dataLimit - dataLimit;
         const endIndex = startIndex + dataLimit;
         return filteredData.slice(startIndex, endIndex);
+    };
+
+    const getTotalPages = () => {
+        const filteredData = getFilteredData();
+        return Math.ceil(filteredData.length / dataLimit);
+    };
+
+    const handlePageChange = (newPage) => {
+        const totalPages = getTotalPages();
+        if (newPage >= 1 && newPage <= totalPages) {
+            setPage(newPage);
+        }
+    };
+
+    const handlePageSizeChange = (event) => {
+        const newSize = event.target.value;
+        setDataLimit(newSize);
+        setPage(1); // Reset to first page when changing page size
     };
 
     const handleRefresh = () => {
@@ -419,6 +493,174 @@ const Transfers = ({ searchTerm }) => {
         </Stack>
     );
 
+    // Pagination component
+    const PaginationControls = () => {
+        const totalPages = getTotalPages();
+        const filteredData = getFilteredData();
+        const startItem = filteredData.length === 0 ? 0 : (page - 1) * dataLimit + 1;
+        const endItem = Math.min(page * dataLimit, filteredData.length);
+
+        return (
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    justifyContent: 'space-between',
+                    alignItems: { xs: 'stretch', sm: 'center' },
+                    gap: 2,
+                    mt: 3,
+                    p: 2,
+                    backgroundColor: '#f5f5f5',
+                    borderRadius: 3,
+                }}
+            >
+                {/* Page size selector */}
+                <Stack direction="row" alignItems="center" spacing={1}>
+                    <Typography variant="body2" color="text.secondary">
+                        Show:
+                    </Typography>
+                    <FormControl size="small">
+                        <Select
+                            value={dataLimit}
+                            onChange={handlePageSizeChange}
+                            sx={{
+                                borderRadius: 2,
+                                minWidth: 80,
+                                backgroundColor: 'white',
+                                '& .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#1976d2',
+                                },
+                                '&:hover .MuiOutlinedInput-notchedOutline': {
+                                    borderColor: '#1565c0',
+                                },
+                            }}
+                        >
+                            {pageSizeOptions.map((option) => (
+                                <MenuItem key={option} value={option}>
+                                    {option}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <Typography variant="body2" color="text.secondary">
+                        per page
+                    </Typography>
+                </Stack>
+
+                {/* Results info */}
+                <Typography variant="body2" color="text.secondary">
+                    Showing {startItem}-{endItem} of {filteredData.length} transfers
+                </Typography>
+
+                {/* Page navigation */}
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                    {/* First page */}
+                    <Tooltip title="First page">
+                        <span>
+                            <IconButton
+                                onClick={() => handlePageChange(1)}
+                                disabled={page === 1}
+                                size="small"
+                                sx={{
+                                    color: page === 1 ? 'grey.400' : '#1976d2',
+                                    '&:hover': {
+                                        backgroundColor: '#e3f2fd',
+                                    },
+                                }}
+                            >
+                                <KeyboardDoubleArrowLeftIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+
+                    {/* Previous page */}
+                    <Tooltip title="Previous page">
+                        <span>
+                            <IconButton
+                                onClick={() => handlePageChange(page - 1)}
+                                disabled={page === 1}
+                                size="small"
+                                sx={{
+                                    color: page === 1 ? 'grey.400' : '#1976d2',
+                                    '&:hover': {
+                                        backgroundColor: '#e3f2fd',
+                                    },
+                                }}
+                            >
+                                <KeyboardArrowLeftIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+
+                    {/* Page indicator */}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1,
+                            px: 2,
+                        }}
+                    >
+                        <Typography variant="body2" color="text.secondary">
+                            Page
+                        </Typography>
+                        <Chip
+                            label={page}
+                            size="small"
+                            sx={{
+                                fontWeight: 600,
+                                backgroundColor: '#1976d2',
+                                color: 'white',
+                                minWidth: 32,
+                            }}
+                        />
+                        <Typography variant="body2" color="text.secondary">
+                            of {totalPages || 1}
+                        </Typography>
+                    </Box>
+
+                    {/* Next page */}
+                    <Tooltip title="Next page">
+                        <span>
+                            <IconButton
+                                onClick={() => handlePageChange(page + 1)}
+                                disabled={page === totalPages || totalPages === 0}
+                                size="small"
+                                sx={{
+                                    color: page === totalPages || totalPages === 0 ? 'grey.400' : '#1976d2',
+                                    '&:hover': {
+                                        backgroundColor: '#e3f2fd',
+                                    },
+                                }}
+                            >
+                                <KeyboardArrowRightIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+
+                    {/* Last page */}
+                    <Tooltip title="Last page">
+                        <span>
+                            <IconButton
+                                onClick={() => handlePageChange(totalPages)}
+                                disabled={page === totalPages || totalPages === 0}
+                                size="small"
+                                sx={{
+                                    color: page === totalPages || totalPages === 0 ? 'grey.400' : '#1976d2',
+                                    '&:hover': {
+                                        backgroundColor: '#e3f2fd',
+                                    },
+                                }}
+                            >
+                                <KeyboardDoubleArrowRightIcon />
+                            </IconButton>
+                        </span>
+                    </Tooltip>
+                </Stack>
+            </Box>
+        );
+    };
+
     if (l) {
         return (
             <>
@@ -433,6 +675,9 @@ const Transfers = ({ searchTerm }) => {
             return (
                 <Container>
                     <TransfersHeader />
+
+                    {/* Top Pagination */}
+                    {getFilteredData().length > 0 && <PaginationControls />}
 
                     <Grid
                         container
@@ -467,6 +712,9 @@ const Transfers = ({ searchTerm }) => {
                             </Grid>
                         )}
                     </Grid>
+
+                    {/* Bottom Pagination */}
+                    {getFilteredData().length > 0 && <PaginationControls />}
                 </Container>
             );
         }
