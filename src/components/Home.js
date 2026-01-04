@@ -63,6 +63,7 @@ export const HomeNavigation = ({
     showTransfersButton = true,
     showNewButton = true,
     showSettingsButton = true,
+    showSearchField = true,
 }) => {
     const navigate = useNavigate()
     const location = useLocation();
@@ -245,28 +246,30 @@ export const HomeNavigation = ({
                         </Tooltip> */}
                     </Stack>
 
-                    {/* Search Field */}
-                    <Box sx={{ minWidth: isCompact ? '100%' : 300, maxWidth: { sm: 400 } }}>
-                        <TextField
-                            fullWidth
-                            label={searchLabel}
-                            placeholder={searchPlaceholder}
-                            size="small"
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                            InputProps={{
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon style={{ color: '#1976d2' }} />
-                                    </InputAdornment>
-                                ),
-                                style: { borderRadius: 10 }
-                            }}
-                            InputLabelProps={{
-                                style: { color: '#1976d2' }
-                            }}
-                        />
-                    </Box>
+                    {/* Search Field - Only shown when showSearchField is true */}
+                    {showSearchField && (
+                        <Box sx={{ minWidth: isCompact ? '100%' : 300, maxWidth: { sm: 400 } }}>
+                            <TextField
+                                fullWidth
+                                label={searchLabel}
+                                placeholder={searchPlaceholder}
+                                size="small"
+                                value={searchTerm}
+                                onChange={handleSearchChange}
+                                InputProps={{
+                                    startAdornment: (
+                                        <InputAdornment position="start">
+                                            <SearchIcon style={{ color: '#1976d2' }} />
+                                        </InputAdornment>
+                                    ),
+                                    style: { borderRadius: 10 }
+                                }}
+                                InputLabelProps={{
+                                    style: { color: '#1976d2' }
+                                }}
+                            />
+                        </Box>
+                    )}
                 </Stack>
             </Container>
 

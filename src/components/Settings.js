@@ -8,7 +8,7 @@ import { HomeNavigation } from "./Home";
 const Settings = () => {
     return (
         <div style={{ marginBottom: 100 }}>
-            <HomeNavigation />
+            <HomeNavigation showSearchField={false} />
             <SettingsBody />
         </div>
     );

@@ -1,6 +1,7 @@
 {
   "short_name": "Flistra2Neo",
   "name": "Data Sync between Flistra and KSP",
+  "description": "Developed in 2025 by Bayon Mbayo - processware GmbH",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,12 +9,12 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "lbm192x192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "logo512.png",
+      "src": "lbm512x512.png",
       "type": "image/png",
       "sizes": "512x512"
     }

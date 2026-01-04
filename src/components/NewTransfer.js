@@ -41,7 +41,7 @@ const WORKER = workerConstants.WORKER;
 const NewTransfer = () => {
     return (
         <div style={{ marginBottom: 100 }}>
-            <HomeNavigation />
+            <HomeNavigation showSearchField={false} />
             <NewTransferBody />
         </div>
     );
@@ -478,6 +478,20 @@ const NewTransferBody = () => {
             case "id":
                 return (
                     <Box display="flex" flexDirection="column" gap={2}>
+                        {/* Mock Data Notice */}
+                        <Box
+                            sx={{
+                                p: 2,
+                                backgroundColor: "#fff3e0",
+                                borderRadius: 2,
+                                border: "1px solid #ff9800",
+                            }}
+                        >
+                            <Typography variant="body2" color="#e65100" fontWeight="medium">
+                                ⚠️ Hinweis: Diese Funktion nutzt derzeit Mock-Daten für die Demo
+                            </Typography>
+                        </Box>
+
                         {featureIdFields.map((field, index) => (
                             <TextField
                                 key={index}

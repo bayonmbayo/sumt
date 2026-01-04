@@ -392,7 +392,7 @@ const ViewUserBody = ({ transfer, searchTerm }) => {
                             {getPaginatedData().length > 0 ? (
                                 getPaginatedData().map((d, idx) => (
                                     <Grid key={d.uuid || idx} size={{ xs: 12 }}>
-                                        <User data={d} />
+                                        <User data={d} currentUserUuid={u.uuid} />
                                     </Grid>
                                 ))
                             ) : (
@@ -440,7 +440,7 @@ const ViewUserBody = ({ transfer, searchTerm }) => {
     );
 }
 
-const User = ({ data }) => {
+const User = ({ data, currentUserUuid }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [showSpinner, setShowSpinner] = useState(false);
     const [openDeleteUser, setOpenDeleteUser] = useState(false);
@@ -449,6 +449,9 @@ const User = ({ data }) => {
     const dispatch = useDispatch();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+    // Check if this user is the current logged-in user
+    const isCurrentUser = currentUserUuid && data.uuid === currentUserUuid;
 
     const handleToggle = () => {
         setIsExpanded(!isExpanded);
@@ -500,7 +503,7 @@ const User = ({ data }) => {
                 sx={{
                     borderRadius: 3,
                     border: '2px solid',
-                    borderColor: '#1976d2',
+                    borderColor: isCurrentUser ? '#4caf50' : '#1976d2',
                     cursor: 'pointer',
                     transition: 'all 0.2s ease',
                     '&:hover': {
@@ -545,6 +548,17 @@ const User = ({ data }) => {
                             >
                                 {displayName}
                             </Typography>
+                            {isCurrentUser && (
+                                <Chip
+                                    label="You"
+                                    size="small"
+                                    sx={{
+                                        fontWeight: 600,
+                                        backgroundColor: '#4caf50',
+                                        color: '#fff',
+                                    }}
+                                />
+                            )}
                         </Stack>
 
                         {/* Actions */}
@@ -569,21 +583,24 @@ const User = ({ data }) => {
                                 </Button>
                             </Tooltip>
 
-                            <Tooltip title="Delete User">
-                                <IconButton
-                                    onClick={openConfirmDelete}
-                                    sx={{
-                                        backgroundColor: '#f44336',
-                                        color: '#fff',
-                                        '&:hover': {
-                                            backgroundColor: '#d32f2f',
-                                        },
-                                    }}
-                                    size="small"
-                                >
-                                    <DeleteIcon fontSize="small" />
-                                </IconButton>
-                            </Tooltip>
+                            {/* Only show delete button if not the current user */}
+                            {!isCurrentUser && (
+                                <Tooltip title="Delete User">
+                                    <IconButton
+                                        onClick={openConfirmDelete}
+                                        sx={{
+                                            backgroundColor: '#f44336',
+                                            color: '#fff',
+                                            '&:hover': {
+                                                backgroundColor: '#d32f2f',
+                                            },
+                                        }}
+                                        size="small"
+                                    >
+                                        <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
                         </Stack>
                     </Stack>
 
