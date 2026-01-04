@@ -120,7 +120,7 @@ const Login = () => {
                 </Paper>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 5 }}>
                     <Typography variant="body2" color="text.secondary">
-                        © {new Date().getFullYear()} Landesbetrieb Mobilität Rheinland-Pfalz
+                        © 2025 - {new Date().getFullYear()} Landesbetrieb Mobilität Rheinland-Pfalz
                     </Typography>
                 </Box>
             </Container>
