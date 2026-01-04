@@ -1,5 +1,5 @@
 import { Box, Button, Container, Paper, Stack, styled, TextField, Typography } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { userActions } from '../actions/user.actions';
@@ -120,7 +120,7 @@ const Login = () => {
                 </Paper>
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 5 }}>
                     <Typography variant="body2" color="text.secondary">
-                        © 2025 Landesbetrieb Mobilität Rheinland-Pfalz
+                        © 2025 - {new Date().getFullYear()} Landesbetrieb Mobilität Rheinland-Pfalz
                     </Typography>
                 </Box>
             </Container>

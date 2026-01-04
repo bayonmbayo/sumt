@@ -83,8 +83,7 @@ const NewUser = ({ update }) => {
                 showTransfersButton={true}
                 showNewButton={false}
                 showSettingsButton={true}
-                searchPlaceholder="Search"
-                searchLabel="Search"
+                showSearchField={false}
             />
             <Spinner show={loading} />
             {!loading && (
